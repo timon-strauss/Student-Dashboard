@@ -1,7 +1,8 @@
 from datetime import date
-from enum import IntEnum
 
 from pydantic import AwareDatetime, BaseModel, Field, ValidationInfo, field_validator
+
+from schemas import CardState, Rating
 
 
 def _not_null(value, info: ValidationInfo):
@@ -52,12 +53,6 @@ class DeckResponse(BaseModel):
     description: str | None
 
 
-class CardState(IntEnum):
-    LEARNING = 1
-    REVIEW = 2
-    RELEARNING = 3
-
-
 class CardCreate(BaseModel):
     deck_id: int
     front: str = Field(min_length=1)
@@ -74,13 +69,6 @@ class CardUpdate(BaseModel):
     back_image: str | None = None
 
     check_required = field_validator("deck_id", "front", "back")(_not_null)
-
-
-class Rating(IntEnum):
-    AGAIN = 1
-    HARD = 2
-    GOOD = 3
-    EASY = 4
 
 
 class CardReview(BaseModel):

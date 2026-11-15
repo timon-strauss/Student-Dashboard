@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from ._stub import not_implemented
 from .schemas import CardCreate, CardReposition, CardResponse, CardReview, CardUpdate
@@ -7,17 +7,16 @@ router = APIRouter(prefix="/cards", tags=["cards"])
 
 
 @router.get("", response_model=list[CardResponse])
-def list_cards(deck_id: int = Query(description="Cards of this deck, ordered by position")) -> list[CardResponse]:
-    not_implemented()
-
-
-@router.get("/due/exams/{exam_id}", response_model=list[CardResponse])
-def list_due_cards_by_exam(exam_id: int) -> list[CardResponse]:
-    not_implemented()
-
-
-@router.get("/due/decks/{deck_id}", response_model=list[CardResponse])
-def list_due_cards_by_deck(deck_id: int) -> list[CardResponse]:
+def list_cards(
+    deck_id: int | None = Query(default=None, description="Cards of this deck"),
+    exam_id: int | None = Query(default=None, description="Cards of all decks of this exam"),
+    due: bool = Query(default=False, description="Only due cards, ordered by due date instead of position"),
+) -> list[CardResponse]:
+    if (deck_id is None) == (exam_id is None):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Exactly one of deck_id or exam_id is required",
+        )
     not_implemented()
 
 

@@ -1,7 +1,6 @@
-
-from enum import IntEnum
-
 from pydantic import AwareDatetime, BaseModel, ConfigDict, ValidationInfo, field_validator
+
+from schemas import CardState, Rating
 
 # --- Exam ---
 
@@ -69,12 +68,6 @@ class DeckResponse(DeckBase):
 # --- Card ---
 
 
-class CardState(IntEnum):
-    LEARNING = 1
-    REVIEW = 2
-    RELEARNING = 3
-
-
 class CardBase(BaseModel):
     deck_id: int
     front: str
@@ -122,13 +115,6 @@ class CardResponse(CardBase, CardSchedule):
 
 
 # --- Review ---
-
-
-class Rating(IntEnum):
-    AGAIN = 1
-    HARD = 2
-    GOOD = 3
-    EASY = 4
 
 
 class ReviewLogCreate(BaseModel):
