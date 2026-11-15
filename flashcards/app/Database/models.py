@@ -94,6 +94,7 @@ class Card(Base):
     # new cards are due immediately
     due: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, index=True)
     last_review: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     deck: Mapped["Deck"] = relationship(back_populates="cards")
     review_logs: Mapped[list["ReviewLog"]] = relationship(

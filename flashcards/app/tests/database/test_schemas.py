@@ -140,6 +140,7 @@ class TestCardSchemas:
             difficulty=None,
             due=AWARE,
             last_review=None,
+            created_at=AWARE,
         )
 
         response = CardResponse.model_validate(card)
@@ -147,6 +148,7 @@ class TestCardSchemas:
         assert response.id == 7
         assert response.state is CardState.LEARNING
         assert response.position == 2
+        assert response.created_at == AWARE
 
 
 class TestReviewSchemas:

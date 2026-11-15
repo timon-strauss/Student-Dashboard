@@ -39,6 +39,8 @@ class TestCreateAndGet:
         assert card.last_review is None
         assert card.due.tzinfo is not None
         assert before - timedelta(seconds=1) <= card.due <= datetime.now(timezone.utc)
+        assert before - timedelta(seconds=1) <= card.created_at <= datetime.now(timezone.utc)
+        assert card.created_at.utcoffset() == timedelta(0)
 
     def test_get_returns_created_card(self, make_deck, make_card, db):
         card = make_card(make_deck().id)
