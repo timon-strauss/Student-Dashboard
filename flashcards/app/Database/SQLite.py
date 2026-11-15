@@ -235,10 +235,7 @@ class SQLiteDatabase(DatabaseAPI):
             card = session.get(Card, card_id)
             if card is None:
                 raise NotFoundError("Card", card_id)
-            changes = data.model_dump(exclude_unset=True)
-            if "deck_id" in changes and session.get(Deck, changes["deck_id"]) is None:
-                raise NotFoundError("Deck", changes["deck_id"])
-            for field, value in changes.items():
+            for field, value in data.model_dump(exclude_unset=True).items():
                 setattr(card, field, value)
             session.commit()
             session.refresh(card)

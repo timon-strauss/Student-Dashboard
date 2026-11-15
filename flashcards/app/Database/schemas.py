@@ -82,14 +82,13 @@ class CardCreate(CardBase):
 
 
 class CardUpdate(BaseModel):
-    deck_id: int | None = None
     front: str | None = None
     front_image: str | None = None
     back: str | None = None
     back_image: str | None = None
     position: int | None = None
 
-    @field_validator("deck_id", "front", "back", "position")
+    @field_validator("front", "back", "position")
     @classmethod
     def not_null(cls, value, info: ValidationInfo):
         if value is None:

@@ -199,25 +199,6 @@ class TestUpdate:
 
         assert db.update_card(card.id, CardUpdate(back_image=None)).back_image is None
 
-    def test_move_to_other_deck(self, make_deck, make_card, db):
-        source = make_deck()
-        target = make_deck()
-        card = make_card(source.id)
-
-        db.update_card(card.id, CardUpdate(deck_id=target.id))
-
-        assert db.list_cards(source.id) == []
-        assert [c.id for c in db.list_cards(target.id)] == [card.id]
-
-    def test_move_to_missing_deck_raises_and_keeps_card(self, make_deck, make_card, db):
-        card = make_card(make_deck().id, front="unchanged")
-
-        with pytest.raises(NotFoundError) as exc:
-            db.update_card(card.id, CardUpdate(deck_id=99, front="changed"))
-
-        assert (exc.value.entity, exc.value.entity_id) == ("Deck", 99)
-        assert db.get_card(card.id) == card
-
     def test_missing_card_raises(self, db):
         with pytest.raises(NotFoundError) as exc:
             db.update_card(1, CardUpdate(front="x"))
