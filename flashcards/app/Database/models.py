@@ -1,19 +1,12 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import (
-    CheckConstraint,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-)
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, Index
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 def utcnow() -> datetime:
@@ -46,29 +39,28 @@ class UTCDateTime(TypeDecorator):
 class Exam(Base):
     __tablename__ = "exams"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    exam_date = Column(UTCDateTime, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
+    description: Mapped[str | None]
+    exam_date: Mapped[datetime] = mapped_column(UTCDateTime)
 
-    decks = relationship(
-        "Deck", back_populates="exam", cascade="all, delete", passive_deletes=True
+    decks: Mapped[list["Deck"]] = relationship(
+        back_populates="exam", cascade="all, delete", passive_deletes=True
     )
 
 
 class Deck(Base):
     __tablename__ = "decks"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    exam_id = Column(
-        Integer, ForeignKey("exams.id", ondelete="CASCADE"), nullable=True, index=True
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    exam_id: Mapped[int | None] = mapped_column(
+        ForeignKey("exams.id", ondelete="CASCADE"), index=True
     )
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    name: Mapped[str]
+    description: Mapped[str | None]
 
-    exam = relationship("Exam", back_populates="decks")
-    cards = relationship(
-        "Card",
+    exam: Mapped["Exam | None"] = relationship(back_populates="decks")
+    cards: Mapped[list["Card"]] = relationship(
         back_populates="deck",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -83,31 +75,28 @@ class Card(Base):
         Index("ix_cards_deck_id_due", "deck_id", "due"),
     )
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    deck_id = Column(
-        Integer, ForeignKey("decks.id", ondelete="CASCADE"), nullable=False
-    )
-    front = Column(String, nullable=False)
-    front_image = Column(String, nullable=True)
-    back = Column(String, nullable=False)
-    back_image = Column(String, nullable=True)
-    position = Column(Integer, nullable=False, default=0)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    deck_id: Mapped[int] = mapped_column(ForeignKey("decks.id", ondelete="CASCADE"))
+    front: Mapped[str]
+    front_image: Mapped[str | None]
+    back: Mapped[str]
+    back_image: Mapped[str | None]
+    position: Mapped[int] = mapped_column(default=0)
 
     # FSRS scheduling state (mirrors fsrs.Card)
     # state: 1 = Learning, 2 = Review, 3 = Relearning (new card = Learning without last_review)
-    state = Column(Integer, nullable=False, default=1)
+    state: Mapped[int] = mapped_column(default=1)
     # index of the current (re)learning step; None once the card is in Review
-    step = Column(Integer, nullable=True, default=0)
+    step: Mapped[int | None] = mapped_column(default=0)
     # None until the first review
-    stability = Column(Float, nullable=True)
-    difficulty = Column(Float, nullable=True)
+    stability: Mapped[float | None] = mapped_column(Float)
+    difficulty: Mapped[float | None] = mapped_column(Float)
     # new cards are due immediately
-    due = Column(UTCDateTime, nullable=False, default=utcnow, index=True)
-    last_review = Column(UTCDateTime, nullable=True)
+    due: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, index=True)
+    last_review: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
-    deck = relationship("Deck", back_populates="cards")
-    review_logs = relationship(
-        "ReviewLog",
+    deck: Mapped["Deck"] = relationship(back_populates="cards")
+    review_logs: Mapped[list["ReviewLog"]] = relationship(
         back_populates="card",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -120,15 +109,12 @@ class ReviewLog(Base):
         CheckConstraint("rating IN (1, 2, 3, 4)", name="ck_review_logs_rating"),
     )
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    card_id = Column(
-        Integer,
-        ForeignKey("cards.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    card_id: Mapped[int] = mapped_column(
+        ForeignKey("cards.id", ondelete="CASCADE"), index=True
     )
     # rating: 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
-    rating = Column(Integer, nullable=False)
-    reviewed_at = Column(UTCDateTime, nullable=False, default=utcnow)
+    rating: Mapped[int]
+    reviewed_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
-    card = relationship("Card", back_populates="review_logs")
+    card: Mapped["Card"] = relationship(back_populates="review_logs")
