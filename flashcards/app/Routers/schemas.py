@@ -1,3 +1,4 @@
+from datetime import date
 from enum import IntEnum
 
 from pydantic import AwareDatetime, BaseModel, Field, ValidationInfo, field_validator
@@ -101,3 +102,18 @@ class CardResponse(BaseModel):
     state: CardState
     due: AwareDatetime
     last_review: AwareDatetime | None
+
+
+class DueCount(BaseModel):
+    due: int
+
+
+class CardStatusCounts(BaseModel):
+    due: int
+    learned: int
+    consolidated: int
+
+
+class ConsolidatedPoint(BaseModel):
+    date: date
+    consolidated: int
