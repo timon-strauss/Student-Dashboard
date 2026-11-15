@@ -171,6 +171,19 @@ class SQLiteDatabase(DatabaseAPI):
             return [CardResponse.model_validate(c) for c in cards]
 
     @classmethod
+    def list_cards_by_exam(cls, exam_id: int) -> list[CardResponse]:
+        with cls._session() as session:
+            if session.get(Exam, exam_id) is None:
+                raise NotFoundError("Exam", exam_id)
+            cards = session.scalars(
+                select(Card)
+                .join(Deck)
+                .where(Deck.exam_id == exam_id)
+                .order_by(Deck.id, Card.position)
+            )
+            return [CardResponse.model_validate(c) for c in cards]
+
+    @classmethod
     def list_due_cards(cls, now: AwareDatetime | None = None) -> list[CardResponse]:
         now = now or datetime.now(timezone.utc)
         with cls._session() as session:

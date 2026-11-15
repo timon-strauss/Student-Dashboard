@@ -94,6 +94,37 @@ class TestListCards:
             db.list_cards(1)
 
 
+class TestListCardsByExam:
+    def test_all_cards_of_exam_ordered_by_deck_and_position(self, make_exam, make_deck, make_card, db):
+        exam = make_exam()
+        deck = make_deck(exam_id=exam.id)
+        deck2 = make_deck(exam_id=exam.id)
+        a = make_card(deck2.id)
+        b = make_card(deck.id)
+        c = make_card(deck.id)
+        make_card(make_deck(exam_id=make_exam(name="other").id).id)
+        make_card(make_deck().id)
+        db.reposition_card(c.id, 0)
+
+        assert [x.id for x in db.list_cards_by_exam(exam.id)] == [c.id, b.id, a.id]
+
+    def test_includes_cards_not_due(self, make_exam, make_deck, make_card, set_due, db):
+        exam = make_exam()
+        card = make_card(make_deck(exam_id=exam.id).id)
+        set_due(card.id, NOW + timedelta(days=100))
+
+        assert [x.id for x in db.list_cards_by_exam(exam.id)] == [card.id]
+
+    def test_exam_without_cards(self, make_exam, db):
+        assert db.list_cards_by_exam(make_exam().id) == []
+
+    def test_missing_exam_raises(self, db):
+        with pytest.raises(NotFoundError) as exc:
+            db.list_cards_by_exam(1)
+
+        assert exc.value.entity == "Exam"
+
+
 class TestDueCards:
     @pytest.fixture
     def setup(self, make_exam, make_deck, make_card, set_due):

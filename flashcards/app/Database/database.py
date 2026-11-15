@@ -104,6 +104,11 @@ class DatabaseAPI(ABC):
 
     @classmethod
     @abstractmethod
+    def list_cards_by_exam(cls, exam_id: int) -> list[CardResponse]:
+        ...
+
+    @classmethod
+    @abstractmethod
     def list_due_cards(
         cls, now: AwareDatetime | None = None
     ) -> list[CardResponse]:
