@@ -30,13 +30,15 @@ def review_schedule(**overrides):
 
 
 def test_save_review_updates_schedule(make_deck, make_card, db):
-    card = make_card(make_deck().id, front="f", position=4)
+    deck = make_deck()
+    make_card(deck.id)
+    card = make_card(deck.id, front="f")
     schedule = review_schedule()
 
     updated = db.save_review(card.id, schedule, ReviewLogCreate(rating=Rating.EASY, reviewed_at=NOW))
 
     assert updated.model_dump(include=set(CardSchedule.model_fields)) == schedule.model_dump()
-    assert (updated.front, updated.position, updated.deck_id) == ("f", 4, card.deck_id)
+    assert (updated.front, updated.position, updated.deck_id) == ("f", 1, card.deck_id)
     assert db.get_card(card.id) == updated
 
 
@@ -107,6 +109,43 @@ def test_list_review_logs_only_for_card(make_deck, make_card, db):
 def test_list_review_logs_missing_card_raises(db):
     with pytest.raises(NotFoundError):
         db.list_review_logs(1)
+
+
+def test_list_review_logs_by_exam(make_exam, make_deck, make_card, db):
+    exam = make_exam()
+    a = make_card(make_deck(exam_id=exam.id).id)
+    b = make_card(make_deck(exam_id=exam.id).id)
+    other = make_card(make_deck(exam_id=make_exam(name="other").id).id)
+    free = make_card(make_deck().id)
+    for card_id, offset, rating in [
+        (a.id, 2, 1),
+        (b.id, 0, 2),
+        (other.id, 1, 3),
+        (free.id, 1, 3),
+        (a.id, 1, 4),
+    ]:
+        db.save_review(
+            card_id, review_schedule(), ReviewLogCreate(rating=rating, reviewed_at=NOW + timedelta(days=offset))
+        )
+
+    logs = db.list_review_logs_by_exam(exam.id)
+
+    assert [(log.card_id, log.rating) for log in logs] == [(b.id, 2), (a.id, 4), (a.id, 1)]
+    assert all(log.reviewed_at.utcoffset() == timedelta(0) for log in logs)
+
+
+def test_list_review_logs_by_exam_without_reviews(make_exam, make_deck, make_card, db):
+    exam = make_exam()
+    make_card(make_deck(exam_id=exam.id).id)
+
+    assert db.list_review_logs_by_exam(exam.id) == []
+
+
+def test_list_review_logs_by_exam_missing_raises(db):
+    with pytest.raises(NotFoundError) as exc:
+        db.list_review_logs_by_exam(1)
+
+    assert exc.value.entity == "Exam"
 
 
 def test_delete_card_removes_logs(make_deck, make_card, db):

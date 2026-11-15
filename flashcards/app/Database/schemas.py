@@ -68,13 +68,15 @@ class DeckResponse(DeckBase):
 # --- Card ---
 
 
-class CardBase(BaseModel):
-    deck_id: int
+class CardContent(BaseModel):
     front: str
     front_image: str | None = None
     back: str
     back_image: str | None = None
-    position: int = 0
+
+
+class CardBase(CardContent):
+    deck_id: int
 
 
 class CardCreate(CardBase):
@@ -82,14 +84,12 @@ class CardCreate(CardBase):
 
 
 class CardUpdate(BaseModel):
-    deck_id: int | None = None
     front: str | None = None
     front_image: str | None = None
     back: str | None = None
     back_image: str | None = None
-    position: int | None = None
 
-    @field_validator("deck_id", "front", "back", "position")
+    @field_validator("front", "back")
     @classmethod
     def not_null(cls, value, info: ValidationInfo):
         if value is None:
@@ -112,6 +112,8 @@ class CardResponse(CardBase, CardSchedule):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    position: int
+    created_at: AwareDatetime
 
 
 # --- Review ---
@@ -129,3 +131,16 @@ class ReviewLogResponse(BaseModel):
     card_id: int
     rating: Rating
     reviewed_at: AwareDatetime
+
+
+# --- Import ---
+
+
+class DeckImport(BaseModel):
+    name: str
+    description: str | None = None
+    cards: list[CardContent] = []
+
+
+class ExamImport(ExamBase):
+    decks: list[DeckImport] = []

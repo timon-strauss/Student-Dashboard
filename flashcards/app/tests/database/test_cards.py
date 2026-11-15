@@ -9,9 +9,11 @@ from .conftest import NOW
 
 
 class TestCreateAndGet:
-    def test_create_new_card_has_initial_schedule(self, make_deck, db):
+    def test_create_new_card_has_initial_schedule(self, make_deck, image, db):
         before = datetime.now(timezone.utc)
         deck = make_deck()
+        image("f.png")
+        image("b.png")
 
         card = db.create_card(
             CardCreate(
@@ -20,7 +22,6 @@ class TestCreateAndGet:
                 back="4",
                 front_image="f.png",
                 back_image="b.png",
-                position=3,
             )
         )
 
@@ -30,7 +31,7 @@ class TestCreateAndGet:
             "4",
             "f.png",
             "b.png",
-            3,
+            0,
         )
         assert card.state is CardState.LEARNING
         assert card.step == 0
@@ -39,6 +40,17 @@ class TestCreateAndGet:
         assert card.last_review is None
         assert card.due.tzinfo is not None
         assert before - timedelta(seconds=1) <= card.due <= datetime.now(timezone.utc)
+        assert before - timedelta(seconds=1) <= card.created_at <= datetime.now(timezone.utc)
+        assert card.created_at.utcoffset() == timedelta(0)
+
+    def test_create_appends_to_end_of_deck(self, make_deck, make_card):
+        deck = make_deck()
+        other = make_deck()
+
+        positions = [make_card(deck.id).position for _ in range(3)]
+
+        assert positions == [0, 1, 2]
+        assert make_card(other.id).position == 0
 
     def test_get_returns_created_card(self, make_deck, make_card, db):
         card = make_card(make_deck().id)
@@ -61,11 +73,12 @@ class TestCreateAndGet:
 class TestListCards:
     def test_ordered_by_position(self, make_deck, make_card, db):
         deck = make_deck()
-        c2 = make_card(deck.id, position=2)
-        c0 = make_card(deck.id, position=0)
-        c1 = make_card(deck.id, position=1)
+        c0 = make_card(deck.id)
+        c1 = make_card(deck.id)
+        c2 = make_card(deck.id)
+        db.reposition_card(c2.id, 0)
 
-        assert [c.id for c in db.list_cards(deck.id)] == [c0.id, c1.id, c2.id]
+        assert [c.id for c in db.list_cards(deck.id)] == [c2.id, c0.id, c1.id]
 
     def test_only_cards_of_deck(self, make_deck, make_card, db):
         deck = make_deck()
@@ -81,6 +94,37 @@ class TestListCards:
     def test_missing_deck_raises(self, db):
         with pytest.raises(NotFoundError):
             db.list_cards(1)
+
+
+class TestListCardsByExam:
+    def test_all_cards_of_exam_ordered_by_deck_and_position(self, make_exam, make_deck, make_card, db):
+        exam = make_exam()
+        deck = make_deck(exam_id=exam.id)
+        deck2 = make_deck(exam_id=exam.id)
+        a = make_card(deck2.id)
+        b = make_card(deck.id)
+        c = make_card(deck.id)
+        make_card(make_deck(exam_id=make_exam(name="other").id).id)
+        make_card(make_deck().id)
+        db.reposition_card(c.id, 0)
+
+        assert [x.id for x in db.list_cards_by_exam(exam.id)] == [c.id, b.id, a.id]
+
+    def test_includes_cards_not_due(self, make_exam, make_deck, make_card, set_due, db):
+        exam = make_exam()
+        card = make_card(make_deck(exam_id=exam.id).id)
+        set_due(card.id, NOW + timedelta(days=100))
+
+        assert [x.id for x in db.list_cards_by_exam(exam.id)] == [card.id]
+
+    def test_exam_without_cards(self, make_exam, db):
+        assert db.list_cards_by_exam(make_exam().id) == []
+
+    def test_missing_exam_raises(self, db):
+        with pytest.raises(NotFoundError) as exc:
+            db.list_cards_by_exam(1)
+
+        assert exc.value.entity == "Exam"
 
 
 class TestDueCards:
@@ -175,7 +219,8 @@ class TestDueCards:
 
 
 class TestUpdate:
-    def test_partial_update(self, make_deck, make_card, db):
+    def test_partial_update(self, make_deck, make_card, image, db):
+        image("img.png")
         card = make_card(make_deck().id, front="alt", back="b", front_image="img.png")
 
         updated = db.update_card(card.id, CardUpdate(front="neu"))
@@ -186,39 +231,90 @@ class TestUpdate:
     def test_update_does_not_touch_schedule(self, make_deck, make_card, db):
         card = make_card(make_deck().id)
 
-        updated = db.update_card(card.id, CardUpdate(back="x", position=5))
+        updated = db.update_card(card.id, CardUpdate(back="x"))
 
-        assert updated.model_dump(include=set(CardResponse.model_fields) - {"back", "position"}) == card.model_dump(
-            include=set(CardResponse.model_fields) - {"back", "position"}
-        )
+        assert updated.model_dump(exclude={"back"}) == card.model_dump(exclude={"back"})
 
-    def test_clear_image(self, make_deck, make_card, db):
+    def test_clear_image(self, make_deck, make_card, image, db):
+        image("b.png")
         card = make_card(make_deck().id, back_image="b.png")
 
         assert db.update_card(card.id, CardUpdate(back_image=None)).back_image is None
 
-    def test_move_to_other_deck(self, make_deck, make_card, db):
-        source = make_deck()
-        target = make_deck()
-        card = make_card(source.id)
-
-        db.update_card(card.id, CardUpdate(deck_id=target.id))
-
-        assert db.list_cards(source.id) == []
-        assert [c.id for c in db.list_cards(target.id)] == [card.id]
-
-    def test_move_to_missing_deck_raises_and_keeps_card(self, make_deck, make_card, db):
-        card = make_card(make_deck().id, front="unchanged")
-
-        with pytest.raises(NotFoundError) as exc:
-            db.update_card(card.id, CardUpdate(deck_id=99, front="changed"))
-
-        assert (exc.value.entity, exc.value.entity_id) == ("Deck", 99)
-        assert db.get_card(card.id) == card
-
     def test_missing_card_raises(self, db):
         with pytest.raises(NotFoundError) as exc:
             db.update_card(1, CardUpdate(front="x"))
+
+        assert exc.value.entity == "Card"
+
+
+class TestReposition:
+    @pytest.fixture
+    def deck_cards(self, make_deck, make_card):
+        deck = make_deck()
+        return deck.id, [make_card(deck.id).id for _ in range(5)]
+
+    def order(self, db, deck_id):
+        return [c.id for c in db.list_cards(deck_id)]
+
+    def positions(self, db, deck_id):
+        return [c.position for c in db.list_cards(deck_id)]
+
+    def test_move_up(self, deck_cards, db):
+        deck_id, ids = deck_cards
+
+        moved = db.reposition_card(ids[3], 1)
+
+        assert moved.position == 1
+        assert self.order(db, deck_id) == [ids[0], ids[3], ids[1], ids[2], ids[4]]
+        assert self.positions(db, deck_id) == [0, 1, 2, 3, 4]
+
+    def test_move_down(self, deck_cards, db):
+        deck_id, ids = deck_cards
+
+        moved = db.reposition_card(ids[0], 3)
+
+        assert moved.position == 3
+        assert self.order(db, deck_id) == [ids[1], ids[2], ids[3], ids[0], ids[4]]
+        assert self.positions(db, deck_id) == [0, 1, 2, 3, 4]
+
+    def test_same_position_is_noop(self, deck_cards, db):
+        deck_id, ids = deck_cards
+
+        db.reposition_card(ids[2], 2)
+
+        assert self.order(db, deck_id) == ids
+
+    def test_position_beyond_end_is_clamped(self, deck_cards, db):
+        deck_id, ids = deck_cards
+
+        moved = db.reposition_card(ids[1], 99)
+
+        assert moved.position == 4
+        assert self.order(db, deck_id) == [ids[0], ids[2], ids[3], ids[4], ids[1]]
+        assert self.positions(db, deck_id) == [0, 1, 2, 3, 4]
+
+    def test_other_decks_untouched(self, deck_cards, make_deck, make_card, db):
+        deck_id, ids = deck_cards
+        other = make_deck()
+        other_ids = [make_card(other.id).id for _ in range(3)]
+
+        db.reposition_card(ids[4], 0)
+
+        assert self.order(db, other.id) == other_ids
+        assert self.positions(db, other.id) == [0, 1, 2]
+
+    def test_does_not_touch_content_or_schedule(self, deck_cards, db):
+        _, ids = deck_cards
+        before = db.get_card(ids[0])
+
+        after = db.reposition_card(ids[0], 2)
+
+        assert after.model_dump(exclude={"position"}) == before.model_dump(exclude={"position"})
+
+    def test_missing_card_raises(self, db):
+        with pytest.raises(NotFoundError) as exc:
+            db.reposition_card(1, 0)
 
         assert exc.value.entity == "Card"
 
@@ -234,6 +330,25 @@ class TestDelete:
         assert db.list_cards(deck.id) == [keep]
         with pytest.raises(NotFoundError):
             db.get_card(gone.id)
+
+    def test_delete_closes_position_gap(self, make_deck, make_card, db):
+        deck = make_deck()
+        other = make_deck()
+        ids = [make_card(deck.id).id for _ in range(4)]
+        other_ids = [make_card(other.id).id for _ in range(2)]
+
+        db.delete_card(ids[1])
+
+        assert [(c.id, c.position) for c in db.list_cards(deck.id)] == [
+            (ids[0], 0),
+            (ids[2], 1),
+            (ids[3], 2),
+        ]
+        assert [(c.id, c.position) for c in db.list_cards(other.id)] == [
+            (other_ids[0], 0),
+            (other_ids[1], 1),
+        ]
+        assert make_card(deck.id).position == 3
 
     def test_delete_keeps_deck(self, make_deck, make_card, db):
         deck = make_deck()

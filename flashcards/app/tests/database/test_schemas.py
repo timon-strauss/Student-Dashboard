@@ -93,11 +93,11 @@ class TestCardSchemas:
     def test_create_defaults(self):
         card = CardCreate(deck_id=1, front="f", back="b")
 
-        assert card.position == 0
+        assert "position" not in CardCreate.model_fields
         assert card.front_image is None
         assert card.back_image is None
 
-    @pytest.mark.parametrize("field", ["deck_id", "front", "back", "position"])
+    @pytest.mark.parametrize("field", ["front", "back"])
     def test_update_rejects_null_for_required_fields(self, field):
         with pytest.raises(ValidationError, match=f"{field} must not be null"):
             CardUpdate(**{field: None})
@@ -140,6 +140,7 @@ class TestCardSchemas:
             difficulty=None,
             due=AWARE,
             last_review=None,
+            created_at=AWARE,
         )
 
         response = CardResponse.model_validate(card)
@@ -147,6 +148,10 @@ class TestCardSchemas:
         assert response.id == 7
         assert response.state is CardState.LEARNING
         assert response.position == 2
+        assert response.created_at == AWARE
+
+    def test_update_has_no_deck_or_position(self):
+        assert {"deck_id", "position"}.isdisjoint(CardUpdate.model_fields)
 
 
 class TestReviewSchemas:

@@ -71,13 +71,12 @@ class CardCreate(BaseModel):
 
 
 class CardUpdate(BaseModel):
-    deck_id: int | None = None
     front: str | None = Field(default=None, min_length=1)
     front_image: str | None = None
     back: str | None = Field(default=None, min_length=1)
     back_image: str | None = None
 
-    check_required = field_validator("deck_id", "front", "back")(_not_null)
+    check_required = field_validator("front", "back")(_not_null)
 
 
 class CardReview(BaseModel):

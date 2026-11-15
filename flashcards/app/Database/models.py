@@ -73,6 +73,7 @@ class Card(Base):
         CheckConstraint("state IN (1, 2, 3)", name="ck_cards_state"),
         # due cards of one deck, ordered by due date
         Index("ix_cards_deck_id_due", "deck_id", "due"),
+        Index("ix_cards_deck_id_position", "deck_id", "position"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -94,6 +95,7 @@ class Card(Base):
     # new cards are due immediately
     due: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, index=True)
     last_review: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     deck: Mapped["Deck"] = relationship(back_populates="cards")
     review_logs: Mapped[list["ReviewLog"]] = relationship(
