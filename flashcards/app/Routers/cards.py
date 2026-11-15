@@ -11,6 +11,16 @@ def list_cards(deck_id: int = Query(description="Cards of this deck, ordered by 
     not_implemented()
 
 
+@router.get("/due/exams/{exam_id}", response_model=list[CardResponse])
+def list_due_cards_by_exam(exam_id: int) -> list[CardResponse]:
+    not_implemented()
+
+
+@router.get("/due/decks/{deck_id}", response_model=list[CardResponse])
+def list_due_cards_by_deck(deck_id: int) -> list[CardResponse]:
+    not_implemented()
+
+
 @router.post("", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
 def create_card(data: CardCreate) -> CardResponse:
     not_implemented()

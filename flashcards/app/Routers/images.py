@@ -1,6 +1,7 @@
 from pathlib import PurePath
 
-from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi import APIRouter, HTTPException, Path, UploadFile, status
+from fastapi.responses import FileResponse
 
 from ._stub import not_implemented
 
@@ -49,4 +50,13 @@ def upload_image(file: UploadFile) -> str:
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Unsupported image type: {file.content_type}",
         )
+    not_implemented()
+
+
+@router.get(
+    "/images/{name}",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/*": {}}}},
+)
+def get_image(name: str = Path(pattern=r"^[A-Za-z0-9_-]+\.[A-Za-z0-9]+$")) -> FileResponse:
     not_implemented()
