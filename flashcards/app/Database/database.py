@@ -1,8 +1,6 @@
-import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from dotenv import load_dotenv
 from pydantic import AwareDatetime
 
 from .schemas import (
@@ -21,11 +19,10 @@ from .schemas import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-load_dotenv(PROJECT_ROOT / ".env")
 
-DATA_DIR = Path(os.getenv("DATA_DIR") or PROJECT_ROOT / "data")
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR") or PROJECT_ROOT / "uploads")
-DATABASE_URL = os.getenv("DATABASE_URL") or f"sqlite:///{DATA_DIR / 'flashcards.db'}"
+DATA_DIR = PROJECT_ROOT / "data"
+UPLOAD_DIR = PROJECT_ROOT / "uploads"
+DATABASE_URL = f"sqlite:///{DATA_DIR / 'flashcards.db'}"
 
 
 def create_folders() -> None:
