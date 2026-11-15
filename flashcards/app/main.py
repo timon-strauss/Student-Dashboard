@@ -1,3 +1,11 @@
-from Database import db
+from fastapi import FastAPI
 
-db.db_start()
+from Routers import api_router
+
+app = FastAPI(title="Flashcards API")
+app.include_router(api_router)
+
+
+@app.get("/health", tags=["health"])
+def health() -> dict[str, str]:
+    return {"status": "ok"}
