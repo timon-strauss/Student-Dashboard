@@ -327,3 +327,17 @@ class SQLiteDatabase(DatabaseAPI):
                 .order_by(ReviewLog.reviewed_at)
             )
             return [ReviewLogResponse.model_validate(l) for l in logs]
+
+    @classmethod
+    def list_review_logs_by_exam(cls, exam_id: int) -> list[ReviewLogResponse]:
+        with cls._session() as session:
+            if session.get(Exam, exam_id) is None:
+                raise NotFoundError("Exam", exam_id)
+            logs = session.scalars(
+                select(ReviewLog)
+                .join(Card)
+                .join(Deck)
+                .where(Deck.exam_id == exam_id)
+                .order_by(ReviewLog.reviewed_at, ReviewLog.id)
+            )
+            return [ReviewLogResponse.model_validate(l) for l in logs]

@@ -166,3 +166,8 @@ class DatabaseAPI(ABC):
     @abstractmethod
     def list_review_logs(cls, card_id: int) -> list[ReviewLogResponse]:
         ...
+
+    @classmethod
+    @abstractmethod
+    def list_review_logs_by_exam(cls, exam_id: int) -> list[ReviewLogResponse]:
+        ...
