@@ -18,108 +18,130 @@ from .schemas import (
 )
 
 class DatabaseAPI(ABC):
+    @classmethod
     @abstractmethod
-    def db_start(self) -> None:
+    def db_start(cls) -> None:
         ...
 
     # --- Exams ---
 
+    @classmethod
     @abstractmethod
-    def list_exams(self) -> list[ExamResponse]:
+    def list_exams(cls) -> list[ExamResponse]:
         ...
 
+    @classmethod
     @abstractmethod
-    def get_exam(self, exam_id: int) -> ExamResponse:
+    def get_exam(cls, exam_id: int) -> ExamResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def create_exam(self, data: ExamCreate) -> ExamResponse:
+    def create_exam(cls, data: ExamCreate) -> ExamResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def update_exam(self, exam_id: int, data: ExamUpdate) -> ExamResponse:
+    def update_exam(cls, exam_id: int, data: ExamUpdate) -> ExamResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def delete_exam(self, exam_id: int) -> None:
+    def delete_exam(cls, exam_id: int) -> None:
         ...
 
     # --- Decks ---
 
+    @classmethod
     @abstractmethod
-    def list_decks(self, exam_id: int | None) -> list[DeckResponse]:
+    def list_decks(cls, exam_id: int | None) -> list[DeckResponse]:
         ...
 
+    @classmethod
     @abstractmethod
-    def list_all_decks(self) -> list[DeckResponse]:
+    def list_all_decks(cls) -> list[DeckResponse]:
         ...
 
+    @classmethod
     @abstractmethod
-    def get_deck(self, deck_id: int) -> DeckResponse:
+    def get_deck(cls, deck_id: int) -> DeckResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def create_deck(self, data: DeckCreate) -> DeckResponse:
+    def create_deck(cls, data: DeckCreate) -> DeckResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def update_deck(self, deck_id: int, data: DeckUpdate) -> DeckResponse:
+    def update_deck(cls, deck_id: int, data: DeckUpdate) -> DeckResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def delete_deck(self, deck_id: int) -> None:
+    def delete_deck(cls, deck_id: int) -> None:
         ...
 
     # --- Cards ---
 
+    @classmethod
     @abstractmethod
-    def list_cards(self, deck_id: int) -> list[CardResponse]:
+    def list_cards(cls, deck_id: int) -> list[CardResponse]:
         ...
 
+    @classmethod
     @abstractmethod
     def list_due_cards(
-        self, now: AwareDatetime | None = None
+        cls, now: AwareDatetime | None = None
     ) -> list[CardResponse]:
         ...
 
+    @classmethod
     @abstractmethod
     def list_due_cards_by_exam(
-        self, exam_id: int, now: AwareDatetime | None = None
+        cls, exam_id: int, now: AwareDatetime | None = None
     ) -> list[CardResponse]:
         ...
 
+    @classmethod
     @abstractmethod
     def list_due_cards_by_deck(
-        self, deck_id: int, now: AwareDatetime | None = None
+        cls, deck_id: int, now: AwareDatetime | None = None
     ) -> list[CardResponse]:
         ...
 
+    @classmethod
     @abstractmethod
-    def get_card(self, card_id: int) -> CardResponse:
+    def get_card(cls, card_id: int) -> CardResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def create_card(self, data: CardCreate) -> CardResponse:
+    def create_card(cls, data: CardCreate) -> CardResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def update_card(self, card_id: int, data: CardUpdate) -> CardResponse:
+    def update_card(cls, card_id: int, data: CardUpdate) -> CardResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def delete_card(self, card_id: int) -> None:
+    def delete_card(cls, card_id: int) -> None:
         ...
 
     # --- Reviews ---
 
+    @classmethod
     @abstractmethod
     def save_review(
-        self, card_id: int, schedule: CardSchedule, review: ReviewLogCreate
+        cls, card_id: int, schedule: CardSchedule, review: ReviewLogCreate
     ) -> CardResponse:
         ...
 
+    @classmethod
     @abstractmethod
-    def list_review_logs(self, card_id: int) -> list[ReviewLogResponse]:
+    def list_review_logs(cls, card_id: int) -> list[ReviewLogResponse]:
         ...
 
 
