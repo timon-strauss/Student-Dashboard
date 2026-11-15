@@ -10,10 +10,10 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.types import TypeDecorator
 
-from .database import Base
+Base = declarative_base()
 
 
 def utcnow() -> datetime:
