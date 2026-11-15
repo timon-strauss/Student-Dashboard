@@ -272,7 +272,14 @@ class SQLiteDatabase(DatabaseAPI):
             card = session.get(Card, card_id)
             if card is None:
                 raise NotFoundError("Card", card_id)
+            deck_id, position = card.deck_id, card.position
             session.delete(card)
+            session.flush()
+            session.execute(
+                update(Card)
+                .where(Card.deck_id == deck_id, Card.position > position)
+                .values(position=Card.position - 1)
+            )
             session.commit()
 
     @staticmethod

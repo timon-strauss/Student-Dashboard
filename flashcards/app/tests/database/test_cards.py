@@ -296,6 +296,25 @@ class TestDelete:
         with pytest.raises(NotFoundError):
             db.get_card(gone.id)
 
+    def test_delete_closes_position_gap(self, make_deck, make_card, db):
+        deck = make_deck()
+        other = make_deck()
+        ids = [make_card(deck.id).id for _ in range(4)]
+        other_ids = [make_card(other.id).id for _ in range(2)]
+
+        db.delete_card(ids[1])
+
+        assert [(c.id, c.position) for c in db.list_cards(deck.id)] == [
+            (ids[0], 0),
+            (ids[2], 1),
+            (ids[3], 2),
+        ]
+        assert [(c.id, c.position) for c in db.list_cards(other.id)] == [
+            (other_ids[0], 0),
+            (other_ids[1], 1),
+        ]
+        assert make_card(deck.id).position == 3
+
     def test_delete_keeps_deck(self, make_deck, make_card, db):
         deck = make_deck()
 
