@@ -1,6 +1,7 @@
 import mimetypes
 from pathlib import Path, PurePath
 
+from Database import NotFoundError as DatabaseNotFoundError
 from Database import db
 
 from ._errors import translate_errors
@@ -33,3 +34,17 @@ def save_image(data: bytes, filename: str | None, content_type: str | None) -> s
 @translate_errors
 def get_image_path(name: str) -> Path:
     return db.get_image_path(name)
+
+
+def extension_for(media_type: str) -> str:
+    return _extension(None, media_type)
+
+
+def read_image(name: str) -> tuple[bytes, str] | None:
+    try:
+        path = db.get_image_path(name)
+        data = path.read_bytes()
+    except (DatabaseNotFoundError, OSError):
+        return None
+    media_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    return data, media_type

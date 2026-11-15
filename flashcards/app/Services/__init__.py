@@ -1,6 +1,6 @@
 from Database import db
 
-from . import cards, config, decks, exams, images, scheduler, statistics
+from . import cards, config, decks, exams, images, scheduler, statistics, transfers
 from .exceptions import InvalidImageError, NotFoundError
 
 
@@ -9,4 +9,4 @@ def start() -> None:
     db.db_start()
 
 
-__all__ = ["InvalidImageError", "NotFoundError", "cards", "config", "decks", "exams", "images", "scheduler", "start", "statistics"]
+__all__ = ["InvalidImageError", "NotFoundError", "cards", "config", "decks", "exams", "images", "scheduler", "start", "statistics", "transfers"]
