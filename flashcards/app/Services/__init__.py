@@ -1,11 +1,12 @@
 from Database import db
 
-from . import cards, decks, exams, images, scheduler
+from . import cards, config, decks, exams, images, scheduler, statistics
 from .exceptions import InvalidImageError, NotFoundError
 
 
 def start() -> None:
+    config.validate()
     db.db_start()
 
 
-__all__ = ["InvalidImageError", "NotFoundError", "cards", "decks", "exams", "images", "scheduler", "start"]
+__all__ = ["InvalidImageError", "NotFoundError", "cards", "config", "decks", "exams", "images", "scheduler", "start", "statistics"]
