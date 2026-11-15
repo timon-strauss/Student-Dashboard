@@ -140,6 +140,11 @@ class DatabaseAPI(ABC):
 
     @classmethod
     @abstractmethod
+    def reposition_card(cls, card_id: int, position: int) -> CardResponse:
+        ...
+
+    @classmethod
+    @abstractmethod
     def delete_card(cls, card_id: int) -> None:
         ...
 

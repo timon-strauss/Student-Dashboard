@@ -73,6 +73,7 @@ class Card(Base):
         CheckConstraint("state IN (1, 2, 3)", name="ck_cards_state"),
         # due cards of one deck, ordered by due date
         Index("ix_cards_deck_id_due", "deck_id", "due"),
+        Index("ix_cards_deck_id_position", "deck_id", "position"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

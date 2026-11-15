@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import AwareDatetime
-from sqlalchemy import create_engine, event, func, make_url, select
+from sqlalchemy import create_engine, event, func, make_url, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
@@ -237,6 +237,31 @@ class SQLiteDatabase(DatabaseAPI):
                 raise NotFoundError("Card", card_id)
             for field, value in data.model_dump(exclude_unset=True).items():
                 setattr(card, field, value)
+            session.commit()
+            session.refresh(card)
+            return CardResponse.model_validate(card)
+
+    @classmethod
+    def reposition_card(cls, card_id: int, position: int) -> CardResponse:
+        with cls._session() as session:
+            card = session.get(Card, card_id)
+            if card is None:
+                raise NotFoundError("Card", card_id)
+            old = card.position
+            new = max(0, min(position, cls._card_count(session, card.deck_id) - 1))
+            if new < old:
+                session.execute(
+                    update(Card)
+                    .where(Card.deck_id == card.deck_id, Card.position >= new, Card.position < old)
+                    .values(position=Card.position + 1)
+                )
+            elif new > old:
+                session.execute(
+                    update(Card)
+                    .where(Card.deck_id == card.deck_id, Card.position > old, Card.position <= new)
+                    .values(position=Card.position - 1)
+                )
+            card.position = new
             session.commit()
             session.refresh(card)
             return CardResponse.model_validate(card)

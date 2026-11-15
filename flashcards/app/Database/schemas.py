@@ -85,9 +85,8 @@ class CardUpdate(BaseModel):
     front_image: str | None = None
     back: str | None = None
     back_image: str | None = None
-    position: int | None = None
 
-    @field_validator("front", "back", "position")
+    @field_validator("front", "back")
     @classmethod
     def not_null(cls, value, info: ValidationInfo):
         if value is None:
