@@ -11,6 +11,9 @@ def _not_null(value, info: ValidationInfo):
     return value
 
 
+# --- Exam ---
+
+
 class ExamCreate(BaseModel):
     name: str = Field(min_length=1)
     description: str | None = None
@@ -32,6 +35,9 @@ class ExamResponse(BaseModel):
     exam_date: AwareDatetime
 
 
+# --- Deck ---
+
+
 class DeckCreate(BaseModel):
     exam_id: int | None = None
     name: str = Field(min_length=1)
@@ -51,6 +57,9 @@ class DeckResponse(BaseModel):
     exam_id: int | None
     name: str
     description: str | None
+
+
+# --- Card ---
 
 
 class CardCreate(BaseModel):
@@ -90,6 +99,9 @@ class CardResponse(BaseModel):
     state: CardState
     due: AwareDatetime
     last_review: AwareDatetime | None
+
+
+# --- Statistics ---
 
 
 class DueCount(BaseModel):
