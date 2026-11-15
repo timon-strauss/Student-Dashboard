@@ -1,7 +1,7 @@
 
 from enum import IntEnum
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict
+from pydantic import AwareDatetime, BaseModel, ConfigDict, ValidationInfo, field_validator
 
 # --- Exam ---
 
@@ -19,6 +19,13 @@ class ExamUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
     exam_date: AwareDatetime | None = None
+
+    @field_validator("name", "exam_date")
+    @classmethod
+    def not_null(cls, value, info: ValidationInfo):
+        if value is None:
+            raise ValueError(f"{info.field_name} must not be null")
+        return value
 
 
 class ExamResponse(ExamBase):
@@ -44,6 +51,13 @@ class DeckUpdate(BaseModel):
     exam_id: int | None = None
     name: str | None = None
     description: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def not_null(cls, value, info: ValidationInfo):
+        if value is None:
+            raise ValueError(f"{info.field_name} must not be null")
+        return value
 
 
 class DeckResponse(DeckBase):
@@ -82,6 +96,13 @@ class CardUpdate(BaseModel):
     back_image: str | None = None
     position: int | None = None
 
+    @field_validator("deck_id", "front", "back", "position")
+    @classmethod
+    def not_null(cls, value, info: ValidationInfo):
+        if value is None:
+            raise ValueError(f"{info.field_name} must not be null")
+        return value
+
 
 class CardSchedule(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -108,11 +129,6 @@ class Rating(IntEnum):
     HARD = 2
     GOOD = 3
     EASY = 4
-
-
-class ReviewCreate(BaseModel):
-    rating: Rating
-    reviewed_at: AwareDatetime | None = None
 
 
 class ReviewLogCreate(BaseModel):

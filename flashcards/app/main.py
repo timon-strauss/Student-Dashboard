@@ -1,3 +1,3 @@
 from Database import db
 
-db.start()
+db.db_start()

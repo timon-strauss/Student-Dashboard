@@ -145,6 +145,6 @@ class DatabaseAPI(ABC):
         ...
 
 # Exposing the Database to Other modules
-from .SQLlite import SQLiteDatabase
+from .SQLite import SQLiteDatabase
 
 db: type[DatabaseAPI] = SQLiteDatabase
