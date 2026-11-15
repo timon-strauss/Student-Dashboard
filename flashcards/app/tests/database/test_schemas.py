@@ -93,7 +93,7 @@ class TestCardSchemas:
     def test_create_defaults(self):
         card = CardCreate(deck_id=1, front="f", back="b")
 
-        assert card.position == 0
+        assert "position" not in CardCreate.model_fields
         assert card.front_image is None
         assert card.back_image is None
 

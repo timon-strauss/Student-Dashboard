@@ -74,7 +74,6 @@ class CardBase(BaseModel):
     front_image: str | None = None
     back: str
     back_image: str | None = None
-    position: int = 0
 
 
 class CardCreate(CardBase):
@@ -111,6 +110,7 @@ class CardResponse(CardBase, CardSchedule):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    position: int
     created_at: AwareDatetime
 
 

@@ -20,7 +20,6 @@ class TestCreateAndGet:
                 back="4",
                 front_image="f.png",
                 back_image="b.png",
-                position=3,
             )
         )
 
@@ -30,7 +29,7 @@ class TestCreateAndGet:
             "4",
             "f.png",
             "b.png",
-            3,
+            0,
         )
         assert card.state is CardState.LEARNING
         assert card.step == 0
@@ -41,6 +40,15 @@ class TestCreateAndGet:
         assert before - timedelta(seconds=1) <= card.due <= datetime.now(timezone.utc)
         assert before - timedelta(seconds=1) <= card.created_at <= datetime.now(timezone.utc)
         assert card.created_at.utcoffset() == timedelta(0)
+
+    def test_create_appends_to_end_of_deck(self, make_deck, make_card):
+        deck = make_deck()
+        other = make_deck()
+
+        positions = [make_card(deck.id).position for _ in range(3)]
+
+        assert positions == [0, 1, 2]
+        assert make_card(other.id).position == 0
 
     def test_get_returns_created_card(self, make_deck, make_card, db):
         card = make_card(make_deck().id)
@@ -63,11 +71,12 @@ class TestCreateAndGet:
 class TestListCards:
     def test_ordered_by_position(self, make_deck, make_card, db):
         deck = make_deck()
-        c2 = make_card(deck.id, position=2)
-        c0 = make_card(deck.id, position=0)
-        c1 = make_card(deck.id, position=1)
+        c0 = make_card(deck.id)
+        c1 = make_card(deck.id)
+        c2 = make_card(deck.id)
+        db.update_card(c0.id, CardUpdate(position=5))
 
-        assert [c.id for c in db.list_cards(deck.id)] == [c0.id, c1.id, c2.id]
+        assert [c.id for c in db.list_cards(deck.id)] == [c1.id, c2.id, c0.id]
 
     def test_only_cards_of_deck(self, make_deck, make_card, db):
         deck = make_deck()

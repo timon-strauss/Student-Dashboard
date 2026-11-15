@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import AwareDatetime
-from sqlalchemy import create_engine, event, make_url, select
+from sqlalchemy import create_engine, event, func, make_url, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
@@ -223,7 +223,7 @@ class SQLiteDatabase(DatabaseAPI):
         with cls._session() as session:
             if session.get(Deck, data.deck_id) is None:
                 raise NotFoundError("Deck", data.deck_id)
-            card = Card(**data.model_dump())
+            card = Card(**data.model_dump(), position=cls._card_count(session, data.deck_id))
             session.add(card)
             session.commit()
             session.refresh(card)
@@ -249,6 +249,10 @@ class SQLiteDatabase(DatabaseAPI):
                 raise NotFoundError("Card", card_id)
             session.delete(card)
             session.commit()
+
+    @staticmethod
+    def _card_count(session: Session, deck_id: int) -> int:
+        return session.scalar(select(func.count()).select_from(Card).where(Card.deck_id == deck_id))
 
     # --- Reviews ---
 

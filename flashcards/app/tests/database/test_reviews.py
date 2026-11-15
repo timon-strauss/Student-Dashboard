@@ -30,13 +30,15 @@ def review_schedule(**overrides):
 
 
 def test_save_review_updates_schedule(make_deck, make_card, db):
-    card = make_card(make_deck().id, front="f", position=4)
+    deck = make_deck()
+    make_card(deck.id)
+    card = make_card(deck.id, front="f")
     schedule = review_schedule()
 
     updated = db.save_review(card.id, schedule, ReviewLogCreate(rating=Rating.EASY, reviewed_at=NOW))
 
     assert updated.model_dump(include=set(CardSchedule.model_fields)) == schedule.model_dump()
-    assert (updated.front, updated.position, updated.deck_id) == ("f", 4, card.deck_id)
+    assert (updated.front, updated.position, updated.deck_id) == ("f", 1, card.deck_id)
     assert db.get_card(card.id) == updated
 
 

@@ -64,9 +64,9 @@ def make_deck(db):
 
 @pytest.fixture
 def make_card(db):
-    def _make(deck_id, front="Frage", back="Antwort", position=0, **kwargs):
+    def _make(deck_id, front="Frage", back="Antwort", **kwargs):
         return db.create_card(
-            CardCreate(deck_id=deck_id, front=front, back=back, position=position, **kwargs)
+            CardCreate(deck_id=deck_id, front=front, back=back, **kwargs)
         )
 
     return _make
