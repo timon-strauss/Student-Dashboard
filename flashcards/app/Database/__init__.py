@@ -144,8 +144,7 @@ class DatabaseAPI(ABC):
     def list_review_logs(cls, card_id: int) -> list[ReviewLogResponse]:
         ...
 
+# Exposing the Database to Other modules
+from .SQLlite import SQLiteDatabase
 
-def get_database() -> DatabaseAPI:
-    from .SQLlite import SQLiteDatabase
-
-    return SQLiteDatabase()
+db: type[DatabaseAPI] = SQLiteDatabase
