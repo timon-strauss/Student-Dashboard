@@ -22,7 +22,7 @@ build/
 
 # SQLite
 data/*
-Upload/*
+uploads/*
 
 # Node
 node_modules/
