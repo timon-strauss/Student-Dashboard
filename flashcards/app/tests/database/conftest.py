@@ -80,3 +80,13 @@ def set_due(db):
             session.commit()
 
     return _set
+
+
+@pytest.fixture
+def image(db, isolated_paths):
+    def _make(name):
+        path = isolated_paths / "uploads" / name
+        path.write_bytes(b"img")
+        return path
+
+    return _make

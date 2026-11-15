@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import AwareDatetime
-from sqlalchemy import create_engine, event, func, make_url, select, update
+from sqlalchemy import create_engine, event, func, make_url, or_, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
@@ -47,6 +47,7 @@ class SQLiteDatabase(DatabaseAPI):
         event.listen(engine, "connect", cls._enable_foreign_keys)
         Base.metadata.create_all(engine)
         cls._session_factory = sessionmaker(bind=engine)
+        cls.remove_unused_images()
 
     @classmethod
     def _session(cls) -> Session:
@@ -97,8 +98,12 @@ class SQLiteDatabase(DatabaseAPI):
             exam = session.get(Exam, exam_id)
             if exam is None:
                 raise NotFoundError("Exam", exam_id)
+            images = cls._image_names(
+                session, select(Card.front_image, Card.back_image).join(Deck).where(Deck.exam_id == exam_id)
+            )
             session.delete(exam)
             session.commit()
+            cls._remove_unused_images(images)
 
     # --- Decks ---
 
@@ -157,8 +162,12 @@ class SQLiteDatabase(DatabaseAPI):
             deck = session.get(Deck, deck_id)
             if deck is None:
                 raise NotFoundError("Deck", deck_id)
+            images = cls._image_names(
+                session, select(Card.front_image, Card.back_image).where(Card.deck_id == deck_id)
+            )
             session.delete(deck)
             session.commit()
+            cls._remove_unused_images(images)
 
     # --- Cards ---
 
@@ -238,6 +247,7 @@ class SQLiteDatabase(DatabaseAPI):
         with cls._session() as session:
             if session.get(Deck, data.deck_id) is None:
                 raise NotFoundError("Deck", data.deck_id)
+            cls._check_images_exist((data.front_image, data.back_image))
             card = Card(**data.model_dump(), position=cls._card_count(session, data.deck_id))
             session.add(card)
             session.commit()
@@ -250,10 +260,14 @@ class SQLiteDatabase(DatabaseAPI):
             card = session.get(Card, card_id)
             if card is None:
                 raise NotFoundError("Card", card_id)
-            for field, value in data.model_dump(exclude_unset=True).items():
+            changes = data.model_dump(exclude_unset=True)
+            cls._check_images_exist(changes.get(field) for field in ("front_image", "back_image"))
+            images = {card.front_image, card.back_image}
+            for field, value in changes.items():
                 setattr(card, field, value)
             session.commit()
             session.refresh(card)
+            cls._remove_unused_images(images - {card.front_image, card.back_image})
             return CardResponse.model_validate(card)
 
     @classmethod
@@ -288,6 +302,7 @@ class SQLiteDatabase(DatabaseAPI):
             if card is None:
                 raise NotFoundError("Card", card_id)
             deck_id, position = card.deck_id, card.position
+            images = {card.front_image, card.back_image}
             session.delete(card)
             session.flush()
             session.execute(
@@ -296,10 +311,28 @@ class SQLiteDatabase(DatabaseAPI):
                 .values(position=Card.position - 1)
             )
             session.commit()
+            cls._remove_unused_images(images)
 
     @staticmethod
     def _card_count(session: Session, deck_id: int) -> int:
         return session.scalar(select(func.count()).select_from(Card).where(Card.deck_id == deck_id))
+
+    @staticmethod
+    def _image_names(session: Session, query) -> set[str]:
+        return {name for row in session.execute(query) for name in row}
+
+    # --- Images ---
+
+    @classmethod
+    def image_in_use(cls, name: str) -> bool:
+        with cls._session() as session:
+            return session.scalar(
+                select(
+                    select(Card.id)
+                    .where(or_(Card.front_image == name, Card.back_image == name))
+                    .exists()
+                )
+            )
 
     # --- Reviews ---
 
@@ -348,6 +381,8 @@ class SQLiteDatabase(DatabaseAPI):
 
     @classmethod
     def import_exam(cls, data: ExamImport) -> ExamResponse:
+        for deck in data.decks:
+            cls._check_card_images(deck)
         with cls._session() as session:
             exam = Exam(**data.model_dump(exclude={"decks"}))
             exam.decks = [cls._build_deck(d) for d in data.decks]
@@ -361,12 +396,17 @@ class SQLiteDatabase(DatabaseAPI):
         with cls._session() as session:
             if exam_id is not None and session.get(Exam, exam_id) is None:
                 raise NotFoundError("Exam", exam_id)
+            cls._check_card_images(data)
             deck = cls._build_deck(data)
             deck.exam_id = exam_id
             session.add(deck)
             session.commit()
             session.refresh(deck)
             return DeckResponse.model_validate(deck)
+
+    @classmethod
+    def _check_card_images(cls, data: DeckImport) -> None:
+        cls._check_images_exist(name for c in data.cards for name in (c.front_image, c.back_image))
 
     @staticmethod
     def _build_deck(data: DeckImport) -> Deck:

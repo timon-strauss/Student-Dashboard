@@ -1,8 +1,13 @@
+import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from pydantic import AwareDatetime
 
+from .exceptions import NotFoundError
 from .schemas import (
     CardCreate,
     CardResponse,
@@ -25,6 +30,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 UPLOAD_DIR = PROJECT_ROOT / "uploads"
 DATABASE_URL = f"sqlite:///{DATA_DIR / 'flashcards.db'}"
+
+IMAGE_EXTENSION = re.compile(r"^\.[A-Za-z0-9]+$")
+SAVED_IMAGE_NAME = re.compile(r"^[0-9a-f]{32}\.[a-z0-9]+$")
+UNUSED_IMAGE_MAX_AGE = timedelta(hours=1)
 
 
 def create_folders() -> None:
@@ -185,3 +194,65 @@ class DatabaseAPI(ABC):
     @abstractmethod
     def import_deck(cls, data: DeckImport, exam_id: int | None) -> DeckResponse:
         ...
+
+    # --- Images ---
+
+    @classmethod
+    @abstractmethod
+    def image_in_use(cls, name: str) -> bool:
+        ...
+
+    @classmethod
+    def save_image(cls, data: bytes, extension: str) -> str:
+        if not IMAGE_EXTENSION.match(extension):
+            raise ValueError(f"Invalid image extension: {extension!r}")
+        name = f"{uuid4().hex}{extension.lower()}"
+        with open(UPLOAD_DIR / name, "xb") as file:
+            file.write(data)
+        return name
+
+    @classmethod
+    def get_image_path(cls, name: str) -> Path:
+        path = cls._upload_path(name)
+        if path is None or not path.is_file():
+            raise NotFoundError("Image", name)
+        return path
+
+    @classmethod
+    def remove_unused_images(cls, older_than: timedelta = UNUSED_IMAGE_MAX_AGE) -> None:
+        cutoff = (datetime.now(timezone.utc) - older_than).timestamp()
+        for path in UPLOAD_DIR.iterdir():
+            if not SAVED_IMAGE_NAME.match(path.name):
+                continue
+            try:
+                expired = path.is_file() and path.stat().st_mtime < cutoff
+            except OSError:
+                continue
+            if expired and not cls.image_in_use(path.name):
+                cls._unlink(path)
+
+    @classmethod
+    def _check_images_exist(cls, names: Iterable[str | None]) -> None:
+        for name in names:
+            if name is not None:
+                cls.get_image_path(name)
+
+    @classmethod
+    def _remove_unused_images(cls, names: set[str | None]) -> None:
+        for name in names - {None}:
+            path = cls._upload_path(name)
+            if path is not None and not cls.image_in_use(name):
+                cls._unlink(path)
+
+    @staticmethod
+    def _unlink(path: Path) -> None:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    @staticmethod
+    def _upload_path(name: str) -> Path | None:
+        upload_dir = UPLOAD_DIR.resolve()
+        path = (upload_dir / name).resolve()
+        return path if path.parent == upload_dir else None

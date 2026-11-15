@@ -9,9 +9,11 @@ from .conftest import NOW
 
 
 class TestCreateAndGet:
-    def test_create_new_card_has_initial_schedule(self, make_deck, db):
+    def test_create_new_card_has_initial_schedule(self, make_deck, image, db):
         before = datetime.now(timezone.utc)
         deck = make_deck()
+        image("f.png")
+        image("b.png")
 
         card = db.create_card(
             CardCreate(
@@ -217,7 +219,8 @@ class TestDueCards:
 
 
 class TestUpdate:
-    def test_partial_update(self, make_deck, make_card, db):
+    def test_partial_update(self, make_deck, make_card, image, db):
+        image("img.png")
         card = make_card(make_deck().id, front="alt", back="b", front_image="img.png")
 
         updated = db.update_card(card.id, CardUpdate(front="neu"))
@@ -232,7 +235,8 @@ class TestUpdate:
 
         assert updated.model_dump(exclude={"back"}) == card.model_dump(exclude={"back"})
 
-    def test_clear_image(self, make_deck, make_card, db):
+    def test_clear_image(self, make_deck, make_card, image, db):
+        image("b.png")
         card = make_card(make_deck().id, back_image="b.png")
 
         assert db.update_card(card.id, CardUpdate(back_image=None)).back_image is None

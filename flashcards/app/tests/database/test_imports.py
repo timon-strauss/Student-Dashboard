@@ -25,6 +25,12 @@ def deck_import(name="Deck", cards=("a", "b", "c")):
     )
 
 
+@pytest.fixture(autouse=True)
+def images(image):
+    for name in ("a", "b", "c", "x"):
+        image(f"{name}.png")
+
+
 def count(db, model):
     with db._session() as session:
         return session.query(model).count()
@@ -111,3 +117,21 @@ class TestImportDeck:
         deck = db.import_deck(deck_import(), None)
 
         assert make_card(deck.id).position == 3
+
+
+class TestImportImages:
+    def test_exam_with_missing_image_raises_and_creates_nothing(self, db):
+        data = ExamImport(name="Mathe", exam_date=NOW, decks=[deck_import(cards=("a", "missing"))])
+
+        with pytest.raises(NotFoundError) as exc:
+            db.import_exam(data)
+
+        assert (exc.value.entity, exc.value.entity_id) == ("Image", "missing.png")
+        assert (count(db, Exam), count(db, Deck), count(db, Card)) == (0, 0, 0)
+
+    def test_deck_with_missing_image_raises_and_creates_nothing(self, db):
+        with pytest.raises(NotFoundError) as exc:
+            db.import_deck(deck_import(cards=("missing",)), None)
+
+        assert exc.value.entity == "Image"
+        assert (count(db, Deck), count(db, Card)) == (0, 0)
