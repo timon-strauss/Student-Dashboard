@@ -1,7 +1,11 @@
+from datetime import datetime, timezone
+
 from Database import db
 from Database import schemas as db_schemas
 from Routers.schemas import CardCreate, CardResponse, CardUpdate
+from schemas import Rating
 
+from . import scheduler
 from ._errors import translate_errors
 
 
@@ -40,6 +44,14 @@ def update_card(card_id: int, data: CardUpdate) -> CardResponse:
 @translate_errors
 def reposition_card(card_id: int, position: int) -> CardResponse:
     return _to_response(db.reposition_card(card_id, position))
+
+
+@translate_errors
+def review_card(card_id: int, rating: Rating) -> CardResponse:
+    reviewed_at = datetime.now(timezone.utc)
+    schedule = scheduler.review(card_id, db.get_card(card_id), rating, reviewed_at)
+    review = db_schemas.ReviewLogCreate(rating=rating, reviewed_at=reviewed_at)
+    return _to_response(db.save_review(card_id, schedule, review))
 
 
 @translate_errors
