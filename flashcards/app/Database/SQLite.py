@@ -5,8 +5,7 @@ from pydantic import AwareDatetime
 from sqlalchemy import create_engine, event, make_url, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from . import DatabaseAPI
-from .database import DATABASE_URL, PROJECT_ROOT, create_folders
+from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
 from .exceptions import DatabaseNotStartedError, NotFoundError
 from .models import Base, Card, Deck, Exam, ReviewLog
 from .schemas import (
