@@ -9,9 +9,11 @@ from .schemas import (
     CardSchedule,
     CardUpdate,
     DeckCreate,
+    DeckImport,
     DeckResponse,
     DeckUpdate,
     ExamCreate,
+    ExamImport,
     ExamResponse,
     ExamUpdate,
     ReviewLogCreate,
@@ -170,4 +172,16 @@ class DatabaseAPI(ABC):
     @classmethod
     @abstractmethod
     def list_review_logs_by_exam(cls, exam_id: int) -> list[ReviewLogResponse]:
+        ...
+
+    # --- Import ---
+
+    @classmethod
+    @abstractmethod
+    def import_exam(cls, data: ExamImport) -> ExamResponse:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def import_deck(cls, data: DeckImport, exam_id: int | None) -> DeckResponse:
         ...

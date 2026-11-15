@@ -14,9 +14,11 @@ from .schemas import (
     CardSchedule,
     CardUpdate,
     DeckCreate,
+    DeckImport,
     DeckResponse,
     DeckUpdate,
     ExamCreate,
+    ExamImport,
     ExamResponse,
     ExamUpdate,
     ReviewLogCreate,
@@ -341,3 +343,36 @@ class SQLiteDatabase(DatabaseAPI):
                 .order_by(ReviewLog.reviewed_at, ReviewLog.id)
             )
             return [ReviewLogResponse.model_validate(l) for l in logs]
+
+    # --- Import ---
+
+    @classmethod
+    def import_exam(cls, data: ExamImport) -> ExamResponse:
+        with cls._session() as session:
+            exam = Exam(**data.model_dump(exclude={"decks"}))
+            exam.decks = [cls._build_deck(d) for d in data.decks]
+            session.add(exam)
+            session.commit()
+            session.refresh(exam)
+            return ExamResponse.model_validate(exam)
+
+    @classmethod
+    def import_deck(cls, data: DeckImport, exam_id: int | None) -> DeckResponse:
+        with cls._session() as session:
+            if exam_id is not None and session.get(Exam, exam_id) is None:
+                raise NotFoundError("Exam", exam_id)
+            deck = cls._build_deck(data)
+            deck.exam_id = exam_id
+            session.add(deck)
+            session.commit()
+            session.refresh(deck)
+            return DeckResponse.model_validate(deck)
+
+    @staticmethod
+    def _build_deck(data: DeckImport) -> Deck:
+        deck = Deck(**data.model_dump(exclude={"cards"}))
+        deck.cards = [
+            Card(**card.model_dump(), position=position)
+            for position, card in enumerate(data.cards)
+        ]
+        return deck

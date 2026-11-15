@@ -68,12 +68,15 @@ class DeckResponse(DeckBase):
 # --- Card ---
 
 
-class CardBase(BaseModel):
-    deck_id: int
+class CardContent(BaseModel):
     front: str
     front_image: str | None = None
     back: str
     back_image: str | None = None
+
+
+class CardBase(CardContent):
+    deck_id: int
 
 
 class CardCreate(CardBase):
@@ -128,3 +131,16 @@ class ReviewLogResponse(BaseModel):
     card_id: int
     rating: Rating
     reviewed_at: AwareDatetime
+
+
+# --- Import ---
+
+
+class DeckImport(BaseModel):
+    name: str
+    description: str | None = None
+    cards: list[CardContent] = []
+
+
+class ExamImport(ExamBase):
+    decks: list[DeckImport] = []
