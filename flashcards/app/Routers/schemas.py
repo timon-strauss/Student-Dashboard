@@ -117,3 +117,31 @@ class CardStatusCounts(BaseModel):
 class ConsolidatedPoint(BaseModel):
     date: date
     consolidated: int
+
+
+# --- Transfer ---
+
+
+class ImageTransfer(BaseModel):
+    media_type: str
+    data: str = Field(min_length=1, description="Base64 encoded image")
+
+
+class CardTransfer(BaseModel):
+    front: str = Field(min_length=1)
+    front_image: ImageTransfer | None = None
+    back: str = Field(min_length=1)
+    back_image: ImageTransfer | None = None
+
+
+class DeckTransfer(BaseModel):
+    name: str = Field(min_length=1)
+    description: str | None = None
+    cards: list[CardTransfer] = Field(default_factory=list)
+
+
+class ExamTransfer(BaseModel):
+    name: str = Field(min_length=1)
+    description: str | None = None
+    exam_date: AwareDatetime
+    decks: list[DeckTransfer] = Field(default_factory=list)
