@@ -10,7 +10,7 @@ router = APIRouter(prefix="/statistics", tags=["statistics"])
 @router.get(
     "/overall",
     response_model=GradeSummary,
-    description="Sum of grade * ECTS over all passed modules with a grade, divided by their ECTS; modules without grade are ignored",
+    description="Sum of grade * ECTS over all passed modules with a grade, divided by their ECTS; ects counts those modules, passed_ects all passed modules including ungraded ones",
 )
 def get_overall_grade() -> GradeSummary:
     return statistics_service.get_overall_grade()
@@ -37,7 +37,7 @@ def get_progression() -> list[YearProgress]:
 @router.get(
     "/modules/{module_id}",
     response_model=ModuleProgress,
-    description="Weighted share of reached points over the submodules that have reached points",
+    description="Share of reached points over the max points of the submodules that already have reached points",
 )
 def get_module_progress(module_id: int) -> ModuleProgress:
     return statistics_service.get_module_progress(module_id)

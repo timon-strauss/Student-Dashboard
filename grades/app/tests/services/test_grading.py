@@ -7,40 +7,41 @@ from app.Services._grading import (
     check_module_state,
     check_submodule_allowed,
     module_grade,
-    require_supported_max_points,
     resolve,
-    submodule_grade,
+    total_points,
 )
 
 
-def _submodule(max_points=100, reached_points=None, weight=1.0):
-    return SubmoduleResponse(
-        id=1, module_id=1, name="s", max_points=max_points, reached_points=reached_points, weight=weight
-    )
+def _submodule(max_points=100, reached_points=None):
+    return SubmoduleResponse(id=1, module_id=1, name="s", max_points=max_points, reached_points=reached_points)
 
 
 def _module(grade=None, passed=False):
     return ModuleResponse(id=1, year_id=1, name="m", grade=grade, ects=5, passed=passed)
 
 
-@pytest.mark.parametrize(
-    "max_points, reached, grade",
-    [(100, 100, 1.0), (100, 83.5, 1.9), (100, 50, 4.0), (100, 33, 5.0), (60, 30, 4.0), (90.0, 42, 4.2)],
-)
-def test_submodule_grade_from_table(max_points, reached, grade):
-    assert submodule_grade(_submodule(max_points, reached)) == grade
+def test_total_points_skips_missing_reached_points():
+    assert total_points([_submodule(120, 101), _submodule(60, None)]) == (101, 180)
 
 
-def test_submodule_without_points_has_no_grade():
-    assert submodule_grade(_submodule(100, None)) is None
+def test_module_grade_uses_table_of_summed_max_points():
+    assert module_grade([_submodule(120, 101), _submodule(60, 52)]) == 1.9
 
 
-def test_module_grade_is_weighted_by_submodule_weight():
-    assert module_grade([_submodule(100, 100, weight=3), _submodule(60, 30, weight=1)]) == 1.75
+def test_module_grade_combines_points_not_grades():
+    assert module_grade([_submodule(120, 120), _submodule(60, 0)]) == 3.0
+
+
+def test_module_grade_allows_submodules_without_own_table():
+    assert module_grade([_submodule(80, 70), _submodule(20, 15)]) == 1.9
 
 
 def test_module_grade_needs_all_submodules_graded():
-    assert module_grade([_submodule(100, 100), _submodule(100, None)]) is None
+    assert module_grade([_submodule(60, 60), _submodule(60, None)]) is None
+
+
+def test_module_grade_needs_table_for_sum():
+    assert module_grade([_submodule(100, 100), _submodule(60, 60)]) is None
 
 
 def test_module_grade_without_submodules():
@@ -49,21 +50,21 @@ def test_module_grade_without_submodules():
 
 class TestResolve:
     def test_manual_grade_without_submodules(self):
-        assert resolve(_module(grade=2.0), []) == ModuleResult(2.0, True, False)
+        assert resolve(_module(grade=2.0), []) == ModuleResult(2.0, True, False, None, None)
 
     def test_manual_failing_grade_is_not_passed(self):
-        assert resolve(_module(grade=4.1), []) == ModuleResult(4.1, False, False)
+        assert resolve(_module(grade=4.1), []).passed is False
 
     def test_ungraded_module_uses_passed_flag(self):
-        assert resolve(_module(passed=True), []) == ModuleResult(None, True, False)
-        assert resolve(_module(passed=False), []) == ModuleResult(None, False, False)
+        assert resolve(_module(passed=True), []).passed is True
+        assert resolve(_module(passed=False), []).passed is False
 
     def test_submodules_decide_grade_and_passed(self):
-        assert resolve(_module(), [_submodule(100, 50)]) == ModuleResult(4.0, True, True)
-        assert resolve(_module(), [_submodule(100, 49.5)]) == ModuleResult(4.1, False, True)
+        assert resolve(_module(), [_submodule(60, 30), _submodule(60, 30)]) == ModuleResult(4.0, True, True, 60, 120)
+        assert resolve(_module(), [_submodule(100, 49.5)]) == ModuleResult(4.1, False, True, 49.5, 100)
 
     def test_incomplete_submodules_are_not_passed(self):
-        assert resolve(_module(), [_submodule(100, 100), _submodule(100)]) == ModuleResult(None, False, True)
+        assert resolve(_module(), [_submodule(60, 60), _submodule(60)]) == ModuleResult(None, False, True, 60, 120)
 
 
 class TestChecks:
@@ -93,12 +94,3 @@ class TestChecks:
     def test_submodule_rejected_on_graded_or_passed_module(self, module):
         with pytest.raises(InvalidDataError):
             check_submodule_allowed(module)
-
-    @pytest.mark.parametrize("max_points", [60, 90, 100, 120, 150, 180, 100.0])
-    def test_supported_max_points(self, max_points):
-        require_supported_max_points(max_points)
-
-    @pytest.mark.parametrize("max_points", [20, 99.5, 200])
-    def test_unsupported_max_points(self, max_points):
-        with pytest.raises(InvalidDataError, match="max_points must be one of"):
-            require_supported_max_points(max_points)

@@ -11,16 +11,15 @@ def module(make_year, make_module):
 
 def test_create_and_get(module, db):
     submodule = db.create_submodule(
-        SubmoduleCreate(module_id=module.id, name="Klausur", max_points=90, reached_points=72.5, weight=0.7)
+        SubmoduleCreate(module_id=module.id, name="Klausur", max_points=90, reached_points=72.5)
     )
 
     assert isinstance(submodule, SubmoduleResponse)
-    assert (submodule.module_id, submodule.name, submodule.max_points, submodule.reached_points, submodule.weight) == (
+    assert (submodule.module_id, submodule.name, submodule.max_points, submodule.reached_points) == (
         module.id,
         "Klausur",
         90,
         72.5,
-        0.7,
     )
     assert db.get_submodule(submodule.id) == submodule
 
@@ -31,7 +30,7 @@ def test_create_defaults_reached_points_to_none(module, make_submodule):
 
 def test_create_with_missing_module_raises_and_persists_nothing(module, db):
     with pytest.raises(NotFoundError) as exc:
-        db.create_submodule(SubmoduleCreate(module_id=99, name="x", max_points=10, weight=1))
+        db.create_submodule(SubmoduleCreate(module_id=99, name="x", max_points=10))
 
     assert (exc.value.entity, exc.value.entity_id) == ("Module", 99)
     assert db.list_submodules(module.id) == []
@@ -76,11 +75,11 @@ def test_list_missing_module_raises(db):
 
 
 def test_update_partial(module, make_submodule, db):
-    submodule = make_submodule(module.id, name="Übung", max_points=20, weight=0.3)
+    submodule = make_submodule(module.id, name="Übung", max_points=20)
 
     updated = db.update_submodule(submodule.id, SubmoduleUpdate(reached_points=18))
 
-    assert (updated.name, updated.max_points, updated.reached_points, updated.weight) == ("Übung", 20, 18, 0.3)
+    assert (updated.name, updated.max_points, updated.reached_points) == ("Übung", 20, 18)
     assert db.get_submodule(submodule.id) == updated
 
 

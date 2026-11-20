@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from pydantic import ValidationError
-from sqlalchemy import create_engine, event, func, make_url, select, update
+from sqlalchemy import Engine, create_engine, event, func, inspect, make_url, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
@@ -41,7 +41,23 @@ class SQLiteDatabase(DatabaseAPI):
         engine = create_engine(url)
         event.listen(engine, "connect", cls._enable_foreign_keys)
         Base.metadata.create_all(engine)
+        cls._drop_submodule_weight(engine)
         cls._session_factory = sessionmaker(bind=engine)
+
+    @staticmethod
+    def _drop_submodule_weight(engine: Engine) -> None:
+        columns = {column["name"] for column in inspect(engine).get_columns("submodules")}
+        if "weight" not in columns:
+            return
+        with engine.begin() as connection:
+            connection.exec_driver_sql("ALTER TABLE submodules RENAME TO submodules_old")
+            connection.exec_driver_sql("DROP INDEX IF EXISTS ix_submodules_module_id")
+            Submodule.__table__.create(connection)
+            connection.exec_driver_sql(
+                "INSERT INTO submodules (id, module_id, name, max_points, reached_points) "
+                "SELECT id, module_id, name, max_points, reached_points FROM submodules_old"
+            )
+            connection.exec_driver_sql("DROP TABLE submodules_old")
 
     @classmethod
     def _session(cls) -> Session:

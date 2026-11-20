@@ -50,7 +50,6 @@ class Submodule(Base):
             "reached_points IS NULL OR (reached_points >= 0 AND reached_points <= max_points)",
             name="ck_submodules_reached_points",
         ),
-        CheckConstraint("weight > 0", name="ck_submodules_weight"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -58,6 +57,5 @@ class Submodule(Base):
     name: Mapped[str]
     max_points: Mapped[float] = mapped_column(Float)
     reached_points: Mapped[float | None] = mapped_column(Float)
-    weight: Mapped[float] = mapped_column(Float)
 
     module: Mapped["Module"] = relationship(back_populates="submodules")

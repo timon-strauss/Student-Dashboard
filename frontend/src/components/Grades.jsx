@@ -130,6 +130,10 @@ export function GradeTiles({ overall }) {
         <span className="tile-label">Aktueller Durchschnitt</span>
       </div>
       <div className="tile">
+        <span className="tile-value">{overall.passed_ects}</span>
+        <span className="tile-label">ECTS gesamt</span>
+      </div>
+      <div className="tile">
         <span className="tile-value">{overall.ects}</span>
         <span className="tile-label">ECTS benotet</span>
       </div>
@@ -253,9 +257,8 @@ export function ModuleForm({ module, years, yearId, onSaved, onClose }) {
 
 export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose }) {
   const [name, setName] = useState(submodule?.name ?? '')
-  const [max, setMax] = useState(String(submodule?.max_points ?? maxPoints[0]))
+  const [max, setMax] = useState(submodule ? String(submodule.max_points) : '')
   const [reached, setReached] = useState(submodule?.reached_points != null ? String(submodule.reached_points) : '')
-  const [weight, setWeight] = useState(String(submodule?.weight ?? 1))
   const { busy, error, run } = useAction()
 
   const submit = (e) => {
@@ -264,7 +267,6 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
       name: name.trim(),
       max_points: Number(max),
       reached_points: toNumber(reached),
-      weight: Number(weight),
     }
     run(async () => {
       onSaved(
@@ -288,7 +290,7 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
             <input
               type="number"
               min="0"
-              max={max}
+              max={max || undefined}
               step="0.5"
               value={reached}
               onChange={(e) => setReached(e.target.value)}
@@ -296,19 +298,28 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
           </label>
           <label className="field">
             <span>Max. Punkte</span>
-            <select value={max} onChange={(e) => setMax(e.target.value)}>
+            <input
+              type="number"
+              min="0.5"
+              step="0.5"
+              list="grade-tables"
+              value={max}
+              onChange={(e) => setMax(e.target.value)}
+              required
+            />
+            <datalist id="grade-tables">
               {maxPoints.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p} />
               ))}
-            </select>
+            </datalist>
           </label>
         </div>
-        <label className="field">
-          <span>Gewichtung <em>Anteil an der Modulnote</em></span>
-          <input type="number" min="0.01" step="any" value={weight} onChange={(e) => setWeight(e.target.value)} required />
-        </label>
+        <p className="field-hint">
+          Die Modulnote ergibt sich aus der Summe aller Punkte und der Notentabelle für die Summe der Max.-Punkte
+          ({maxPoints.join(', ')}).
+        </p>
         {error && <p className="error">{error}</p>}
-        <Actions busy={busy || !name.trim() || !weight} onClose={onClose} />
+        <Actions busy={busy || !name.trim() || !max} onClose={onClose} />
       </form>
     </Modal>
   )

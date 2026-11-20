@@ -58,7 +58,7 @@ export default function Layout() {
       <header className="topbar">
         <Link to="/" className="brand">
           <Logo />
-          <span>Karteikarten</span>
+          <span>Dashboard</span>
         </Link>
         <nav className="topnav">
           <NavLink to="/grades" className="btn btn-ghost btn-small">Noten</NavLink>

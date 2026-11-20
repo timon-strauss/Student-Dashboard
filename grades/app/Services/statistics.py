@@ -6,7 +6,7 @@ from app.Database import schemas as db_schemas
 from app.Routers.schemas import GradeSummary, ModuleProgress, YearProgress
 
 from ._errors import translate_errors
-from ._grading import resolve, submodules_by_module
+from ._grading import resolve, submodules_by_module, total_points
 
 GradedModule = tuple[db_schemas.ModuleResponse, float]
 
@@ -33,18 +33,24 @@ def _weighted_grade(modules: Iterable[GradedModule]) -> float | None:
     return round(sum(grade * module.ects for module, grade in modules) / total, 2)
 
 
-def _summary(modules: list[GradedModule]) -> GradeSummary:
-    return GradeSummary(grade=_weighted_grade(modules), ects=_ects(modules))
+def _passed_ects(modules: Iterable[db_schemas.ModuleResponse]) -> int:
+    submodules = submodules_by_module()
+    return sum(module.ects for module in modules if resolve(module, submodules[module.id]).passed)
+
+
+def _summary(modules: list[db_schemas.ModuleResponse]) -> GradeSummary:
+    graded = _graded(modules)
+    return GradeSummary(grade=_weighted_grade(graded), ects=_ects(graded), passed_ects=_passed_ects(modules))
 
 
 @translate_errors
 def get_overall_grade() -> GradeSummary:
-    return _summary(_graded(db.list_all_modules()))
+    return _summary(db.list_all_modules())
 
 
 @translate_errors
 def get_year_grade(year_id: int) -> GradeSummary:
-    return _summary(_graded(db.list_modules(year_id)))
+    return _summary(db.list_modules(year_id))
 
 
 @translate_errors
@@ -75,10 +81,12 @@ def get_progression() -> list[YearProgress]:
 def get_module_progress(module_id: int) -> ModuleProgress:
     submodules = db.list_submodules(module_id)
     graded = [s for s in submodules if s.reached_points is not None]
-    graded_weight = sum(s.weight for s in graded)
-    total_weight = sum(s.weight for s in submodules)
-    percentage = None
-    if graded_weight > 0:
-        share = sum(s.weight * s.reached_points / s.max_points for s in graded) / graded_weight
-        percentage = round(share * 100, 2)
-    return ModuleProgress(reached_percentage=percentage, graded_weight=graded_weight, total_weight=total_weight)
+    reached, graded_max = total_points(graded)
+    _, total_max = total_points(submodules)
+    percentage = round(reached / graded_max * 100, 2) if graded_max > 0 else None
+    return ModuleProgress(
+        reached_percentage=percentage,
+        reached_points=reached,
+        graded_max_points=graded_max,
+        total_max_points=total_max,
+    )

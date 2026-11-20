@@ -16,33 +16,42 @@ class ModuleResult:
     grade: float | None
     passed: bool
     grade_from_submodules: bool
+    reached_points: float | None
+    max_points: float | None
 
 
-def require_supported_max_points(max_points: float) -> None:
-    if not Grading.is_supported(max_points):
-        raise InvalidDataError(f"max_points must be one of {Grading.supported_max_points()}, got {max_points:g}")
-
-
-def submodule_grade(submodule: db_schemas.SubmoduleResponse) -> float | None:
-    if submodule.reached_points is None:
-        return None
-    return Grading.grade_for(submodule.max_points, submodule.reached_points)
+def total_points(submodules: Iterable[db_schemas.SubmoduleResponse]) -> tuple[float, float]:
+    submodules = list(submodules)
+    reached = sum(s.reached_points for s in submodules if s.reached_points is not None)
+    return reached, sum(s.max_points for s in submodules)
 
 
 def module_grade(submodules: Iterable[db_schemas.SubmoduleResponse]) -> float | None:
-    graded = [(s.weight, submodule_grade(s)) for s in submodules]
-    if not graded or any(grade is None for _, grade in graded):
+    submodules = list(submodules)
+    if not submodules or any(s.reached_points is None for s in submodules):
         return None
-    total_weight = sum(weight for weight, _ in graded)
-    return round(sum(weight * grade for weight, grade in graded) / total_weight, 2)
+    reached, maximum = total_points(submodules)
+    if not Grading.is_supported(maximum):
+        return None
+    return Grading.grade_for(maximum, reached)
 
 
 def resolve(
     module: db_schemas.ModuleResponse, submodules: list[db_schemas.SubmoduleResponse]
 ) -> ModuleResult:
-    grade = module_grade(submodules) if submodules else module.grade
+    if submodules:
+        grade = module_grade(submodules)
+        reached, maximum = total_points(submodules)
+    else:
+        grade, reached, maximum = module.grade, None, None
     passed = grade <= PASSING_GRADE if grade is not None else module.passed
-    return ModuleResult(grade=grade, passed=passed, grade_from_submodules=bool(submodules))
+    return ModuleResult(
+        grade=grade,
+        passed=passed,
+        grade_from_submodules=bool(submodules),
+        reached_points=reached,
+        max_points=maximum,
+    )
 
 
 def check_module_state(grade: float | None, passed: bool, has_submodules: bool) -> None:

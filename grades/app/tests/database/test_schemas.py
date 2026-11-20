@@ -76,21 +76,21 @@ class TestModuleSchemas:
 class TestSubmoduleSchemas:
     def test_create_rejects_reached_above_max(self):
         with pytest.raises(ValidationError, match="must not exceed"):
-            SubmoduleCreate(module_id=1, name="s", max_points=10, reached_points=11, weight=1)
+            SubmoduleCreate(module_id=1, name="s", max_points=10, reached_points=11)
 
     def test_create_accepts_reached_equal_max(self):
-        assert SubmoduleCreate(module_id=1, name="s", max_points=10, reached_points=10, weight=1).reached_points == 10
+        assert SubmoduleCreate(module_id=1, name="s", max_points=10, reached_points=10).reached_points == 10
 
     @pytest.mark.parametrize(
-        "field, value", [("max_points", 0), ("max_points", -1), ("reached_points", -1), ("weight", 0), ("weight", -0.5)]
+        "field, value", [("max_points", 0), ("max_points", -1), ("reached_points", -1)]
     )
     def test_create_rejects_invalid_numbers(self, field, value):
-        values = {"module_id": 1, "name": "s", "max_points": 10, "weight": 1, field: value}
+        values = {"module_id": 1, "name": "s", "max_points": 10, field: value}
 
         with pytest.raises(ValidationError):
             SubmoduleCreate(**values)
 
-    @pytest.mark.parametrize("field", ["name", "max_points", "weight"])
+    @pytest.mark.parametrize("field", ["name", "max_points"])
     def test_update_rejects_null(self, field):
         with pytest.raises(ValidationError):
             SubmoduleUpdate(**{field: None})
@@ -99,6 +99,6 @@ class TestSubmoduleSchemas:
         assert SubmoduleUpdate(reached_points=None).model_dump(exclude_unset=True) == {"reached_points": None}
 
     def test_response_from_orm(self):
-        submodule = Submodule(id=3, module_id=1, name="s", max_points=10, reached_points=5, weight=0.5)
+        submodule = Submodule(id=3, module_id=1, name="s", max_points=10, reached_points=5)
 
-        assert SubmoduleResponse.model_validate(submodule).weight == 0.5
+        assert SubmoduleResponse.model_validate(submodule).reached_points == 5

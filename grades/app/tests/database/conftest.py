@@ -55,9 +55,9 @@ def make_module(db):
 
 @pytest.fixture
 def make_submodule(db):
-    def _make(module_id, name="Klausur", max_points=100.0, weight=1.0, **kwargs):
+    def _make(module_id, name="Klausur", max_points=100.0, **kwargs):
         return db.create_submodule(
-            SubmoduleCreate(module_id=module_id, name=name, max_points=max_points, weight=weight, **kwargs)
+            SubmoduleCreate(module_id=module_id, name=name, max_points=max_points, **kwargs)
         )
 
     return _make

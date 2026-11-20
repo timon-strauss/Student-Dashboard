@@ -7,7 +7,6 @@ YearLabel = Annotated[str, Field(min_length=1)]
 Ects = Annotated[int, Field(gt=0)]
 MaxPoints = Annotated[float, Field(gt=0)]
 ReachedPoints = Annotated[float, Field(ge=0)]
-Weight = Annotated[float, Field(gt=0)]
 
 # --- Year ---
 
@@ -82,7 +81,6 @@ class SubmoduleBase(BaseModel):
     name: str
     max_points: MaxPoints
     reached_points: ReachedPoints | None = None
-    weight: Weight
 
     @model_validator(mode="after")
     def reached_within_max(self):
@@ -99,9 +97,8 @@ class SubmoduleUpdate(BaseModel):
     name: str | None = None
     max_points: MaxPoints | None = None
     reached_points: ReachedPoints | None = None
-    weight: Weight | None = None
 
-    @field_validator("name", "max_points", "weight")
+    @field_validator("name", "max_points")
     @classmethod
     def not_null(cls, value, info: ValidationInfo):
         if value is None:

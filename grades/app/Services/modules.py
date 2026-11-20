@@ -18,6 +18,8 @@ def _to_response(
         grade=result.grade,
         passed=result.passed,
         grade_from_submodules=result.grade_from_submodules,
+        reached_points=result.reached_points,
+        max_points=result.max_points,
     )
 
 

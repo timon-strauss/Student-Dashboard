@@ -60,10 +60,9 @@ def test_module_requires_existing_year(session):
 @pytest.mark.parametrize(
     "values",
     [
-        {"max_points": 0, "weight": 1},
-        {"max_points": 10, "weight": 0},
-        {"max_points": 10, "weight": 1, "reached_points": -1},
-        {"max_points": 10, "weight": 1, "reached_points": 11},
+        {"max_points": 0},
+        {"max_points": 10, "reached_points": -1},
+        {"max_points": 10, "reached_points": 11},
     ],
 )
 def test_submodule_constraints(session, module, values):
@@ -74,7 +73,7 @@ def test_submodule_constraints(session, module, values):
 
 
 def test_submodule_requires_existing_module(session):
-    session.add(Submodule(module_id=99, name="s", max_points=10, weight=1))
+    session.add(Submodule(module_id=99, name="s", max_points=10))
 
     with pytest.raises(IntegrityError):
         session.flush()

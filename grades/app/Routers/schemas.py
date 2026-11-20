@@ -59,6 +59,8 @@ class ModuleResponse(BaseModel):
     ects: int
     passed: bool
     grade_from_submodules: bool
+    reached_points: float | None
+    max_points: float | None
 
 
 # --- Submodule ---
@@ -69,7 +71,6 @@ class SubmoduleCreate(BaseModel):
     name: str = Field(min_length=1)
     max_points: float = Field(gt=0)
     reached_points: float | None = Field(default=None, ge=0)
-    weight: float = Field(gt=0)
 
     @model_validator(mode="after")
     def reached_within_max(self):
@@ -82,9 +83,8 @@ class SubmoduleUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1)
     max_points: float | None = Field(default=None, gt=0)
     reached_points: float | None = Field(default=None, ge=0)
-    weight: float | None = Field(default=None, gt=0)
 
-    check_required = field_validator("name", "max_points", "weight")(_not_null)
+    check_required = field_validator("name", "max_points")(_not_null)
 
 
 class SubmoduleResponse(BaseModel):
@@ -93,8 +93,6 @@ class SubmoduleResponse(BaseModel):
     name: str
     max_points: float
     reached_points: float | None
-    weight: float
-    grade: float | None
 
 
 # --- Statistics ---
@@ -103,6 +101,7 @@ class SubmoduleResponse(BaseModel):
 class GradeSummary(BaseModel):
     grade: float | None
     ects: int
+    passed_ects: int
 
 
 class YearProgress(BaseModel):
@@ -116,5 +115,6 @@ class YearProgress(BaseModel):
 
 class ModuleProgress(BaseModel):
     reached_percentage: float | None
-    graded_weight: float
-    total_weight: float
+    reached_points: float
+    graded_max_points: float
+    total_max_points: float

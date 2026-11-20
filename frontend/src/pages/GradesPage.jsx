@@ -184,7 +184,12 @@ export default function GradesPage() {
                             <>
                               {ectsLabel(module.ects)}
                               {hasSubmodules && ` · ${module.submodules.length} ${module.submodules.length === 1 ? 'Teilleistung' : 'Teilleistungen'}`}
-                              {module.grade_from_submodules && module.grade === null && ' · Punkte fehlen noch'}
+                              {hasSubmodules && ` · ${formatPoints(module.reached_points)} / ${formatPoints(module.max_points)} Punkte`}
+                              {hasSubmodules && module.grade === null && (
+                                module.submodules.some((s) => s.reached_points === null)
+                                  ? ' · Punkte fehlen noch'
+                                  : !maxPoints.includes(module.max_points) && ` · keine Notentabelle für ${formatPoints(module.max_points)} Punkte`
+                              )}
                             </>
                           }
                           grade={<Grade value={module.grade} level="module" passedWithoutGrade={module.passed} />}
@@ -208,8 +213,8 @@ export default function GradesPage() {
                               key={submodule.id}
                               level="submodule"
                               title={submodule.name}
-                              meta={`${submodule.reached_points === null ? '–' : formatPoints(submodule.reached_points)} / ${formatPoints(submodule.max_points)} Punkte · Gewichtung ${formatPoints(submodule.weight)}`}
-                              grade={<Grade value={submodule.grade} level="submodule" />}
+                              meta={`${submodule.reached_points === null ? '–' : formatPoints(submodule.reached_points)} / ${formatPoints(submodule.max_points)} Punkte`}
+                              grade={<span />}
                               actions={
                                 <>
                                   <ActionButton

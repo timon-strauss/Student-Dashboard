@@ -47,6 +47,8 @@ def test_module_endpoints(client):
         "ects": 8,
         "passed": False,
         "grade_from_submodules": False,
+        "reached_points": None,
+        "max_points": None,
     }
     other = client.post("/api/modules", json={"year_id": year_b, "name": "LinA", "ects": 5}).json()
 
@@ -79,11 +81,11 @@ def test_submodule_endpoints(client):
     module_id = client.post("/api/modules", json={"year_id": year_id, "name": "m", "ects": 5}).json()["id"]
 
     created = client.post(
-        "/api/submodules", json={"module_id": module_id, "name": "Klausur", "max_points": 90, "weight": 0.7}
+        "/api/submodules", json={"module_id": module_id, "name": "Klausur", "max_points": 90}
     )
     assert created.status_code == 201
     submodule = created.json()
-    assert set(submodule) == {"id", "module_id", "name", "max_points", "reached_points", "weight", "grade"}
+    assert set(submodule) == {"id", "module_id", "name", "max_points", "reached_points"}
 
     assert client.get("/api/submodules", params={"module_id": module_id}).json() == [submodule]
     assert client.get("/api/submodules").json() == [submodule]
@@ -99,10 +101,10 @@ def test_submodule_endpoints(client):
 def test_submodule_validation(client):
     year_id = client.post("/api/years", json={"year": "a"}).json()["id"]
     module_id = client.post("/api/modules", json={"year_id": year_id, "name": "m", "ects": 5}).json()["id"]
-    base = {"module_id": module_id, "name": "s", "max_points": 60, "weight": 1}
+    base = {"module_id": module_id, "name": "s", "max_points": 60}
 
     assert client.post("/api/submodules", json={**base, "reached_points": 61}).status_code == 422
-    assert client.post("/api/submodules", json={**base, "weight": 0}).status_code == 422
+    assert client.post("/api/submodules", json={**base, "max_points": 0}).status_code == 422
     assert client.post("/api/submodules", json={**base, "module_id": 99}).status_code == 404
 
     submodule_id = client.post("/api/submodules", json=base).json()["id"]
@@ -117,30 +119,44 @@ def _module_with_year(client, **fields):
 
 
 def _add_submodule(client, module_id, **fields):
-    return client.post("/api/submodules", json={"module_id": module_id, "name": "s", "weight": 1, **fields})
+    return client.post("/api/submodules", json={"module_id": module_id, "name": "s", **fields})
 
 
 def test_grades_from_table(client):
     module_id = _module_with_year(client)["id"]
 
-    exam = _add_submodule(client, module_id, max_points=100, reached_points=83.5, weight=3).json()
-    oral = _add_submodule(client, module_id, max_points=60).json()
-    assert (exam["grade"], oral["grade"]) == (1.9, None)
+    exam = _add_submodule(client, module_id, max_points=120, reached_points=101).json()
+    sheets = _add_submodule(client, module_id, max_points=60).json()
+    assert "grade" not in exam
     module = client.get(f"/api/modules/{module_id}").json()
     assert (module["grade"], module["passed"], module["grade_from_submodules"]) == (None, False, True)
+    assert (module["reached_points"], module["max_points"]) == (101, 180)
 
-    client.patch(f"/api/submodules/{oral['id']}", json={"reached_points": 30})
+    client.patch(f"/api/submodules/{sheets['id']}", json={"reached_points": 52})
     module = client.get(f"/api/modules/{module_id}").json()
-    assert (module["grade"], module["passed"]) == (2.42, True)
+    assert (module["grade"], module["passed"], module["reached_points"]) == (1.9, True, 153)
 
-    client.patch(f"/api/submodules/{oral['id']}", json={"reached_points": 21})
+    client.patch(f"/api/submodules/{exam['id']}", json={"reached_points": 30})
     listed = client.get("/api/modules").json()[0]
-    assert (listed["grade"], listed["passed"]) == (2.65, True)
+    assert (listed["grade"], listed["passed"]) == (4.2, False)
 
-    client.patch(f"/api/submodules/{exam['id']}", json={"reached_points": 0})
-    client.patch(f"/api/submodules/{oral['id']}", json={"reached_points": 0})
+
+def test_module_without_table_for_point_sum_has_no_grade(client):
+    module_id = _module_with_year(client)["id"]
+    _add_submodule(client, module_id, max_points=100, reached_points=90)
+    extra = _add_submodule(client, module_id, max_points=60, reached_points=60).json()
+
     module = client.get(f"/api/modules/{module_id}").json()
-    assert (module["grade"], module["passed"]) == (5.0, False)
+    assert (module["grade"], module["max_points"]) == (None, 160)
+
+    client.patch(f"/api/submodules/{extra['id']}", json={"max_points": 80, "reached_points": 75})
+    module = client.get(f"/api/modules/{module_id}").json()
+    assert (module["grade"], module["max_points"]) == (1.5, 180)
+
+
+def test_plain_module_has_no_points(client):
+    module = _module_with_year(client, grade=2.0)
+    assert (module["reached_points"], module["max_points"]) == (None, None)
 
 
 def test_manual_grade_decides_passed(client):
@@ -189,16 +205,12 @@ def test_submodule_rejected_on_graded_or_passed_module(client):
     assert client.get("/api/submodules", params={"module_id": passed["id"]}).json() == []
 
 
-def test_submodule_max_points_must_have_table(client):
+def test_submodule_accepts_any_positive_max_points(client):
     module_id = _module_with_year(client)["id"]
 
-    response = _add_submodule(client, module_id, max_points=20)
-    assert response.status_code == 422
-    assert response.json() == {"detail": "max_points must be one of [60, 90, 100, 120, 150, 180], got 20"}
-
-    submodule_id = _add_submodule(client, module_id, max_points=100).json()["id"]
-    assert client.patch(f"/api/submodules/{submodule_id}", json={"max_points": 75}).status_code == 422
-    assert client.patch(f"/api/submodules/{submodule_id}", json={"max_points": 60}).json()["max_points"] == 60
+    small = _add_submodule(client, module_id, max_points=20, reached_points=15)
+    assert small.status_code == 201
+    assert small.json()["max_points"] == 20
 
 
 def test_deleting_last_submodule_returns_to_manual_grading(client):

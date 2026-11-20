@@ -80,6 +80,8 @@ export default function Dashboard() {
 
   return (
     <>
+      <GradesSection />
+
       <section className="hero">
         <p className="eyebrow">Heute</p>
         <h1>
@@ -107,8 +109,6 @@ export default function Dashboard() {
           </p>
         </div>
       )}
-
-      <GradesSection />
 
       {upcoming.length > 0 && (
         <section>
