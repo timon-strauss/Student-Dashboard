@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 from sqlalchemy import make_url
 
-import Database
-from Database import DatabaseAPI, DatabaseNotStartedError, SQLiteDatabase
-from Database.schemas import ExamCreate
+from app import Database
+from app.Database import DatabaseAPI, DatabaseNotStartedError, SQLiteDatabase
+from app.Database.schemas import ExamCreate
 
 from .conftest import NOW, database_module
 
@@ -73,7 +73,7 @@ class TestConfig:
 
     def test_config_ignores_environment(self, tmp_path):
         script = (
-            "from Database import database as d;"
+            "from app.Database import database as d;"
             "print(d.DATA_DIR); print(d.UPLOAD_DIR); print(d.DATABASE_URL)"
         )
         env = dict(
@@ -85,7 +85,7 @@ class TestConfig:
 
         result = subprocess.run(
             [sys.executable, "-c", script],
-            cwd=APP_DIR,
+            cwd=APP_DIR.parent,
             env=env,
             capture_output=True,
             text=True,

@@ -6,8 +6,8 @@ from fsrs import Rating as FsrsRating
 from fsrs import Scheduler
 from fsrs import State as FsrsState
 
-from Database.schemas import CardSchedule
-from schemas import CardState, Rating
+from app.Database.schemas import CardSchedule
+from app.schemas import CardState, Rating
 
 from . import config
 

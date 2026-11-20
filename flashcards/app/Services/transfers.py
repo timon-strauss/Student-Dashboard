@@ -1,9 +1,9 @@
 import base64
 import binascii
 
-from Database import db
-from Database import schemas as db_schemas
-from Routers.schemas import CardTransfer, DeckResponse, DeckTransfer, ExamResponse, ExamTransfer, ImageTransfer
+from app.Database import db
+from app.Database import schemas as db_schemas
+from app.Routers.schemas import CardTransfer, DeckResponse, DeckTransfer, ExamResponse, ExamTransfer, ImageTransfer
 
 from . import images
 from ._errors import translate_errors

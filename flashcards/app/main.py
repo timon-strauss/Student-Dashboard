@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from Routers import api_router
-import Services
+from app.Routers import api_router
+from app import Services
 
 
 @asynccontextmanager

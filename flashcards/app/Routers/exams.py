@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from Services import exams as exam_service
+from app.Services import exams as exam_service
 
 from .schemas import ExamCreate, ExamResponse, ExamUpdate
 

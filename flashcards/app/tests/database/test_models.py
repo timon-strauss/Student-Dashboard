@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from Database.models import Card, Deck, Exam, ReviewLog, UTCDateTime, utcnow
+from app.Database.models import Card, Deck, Exam, ReviewLog, UTCDateTime, utcnow
 
 
 class TestUtcnow:

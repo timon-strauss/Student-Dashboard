@@ -3,9 +3,9 @@ from datetime import timedelta, timezone
 import fsrs
 import pytest
 
-from Database import NotFoundError
-from Database.models import ReviewLog
-from Database.schemas import (
+from app.Database import NotFoundError
+from app.Database.models import ReviewLog
+from app.Database.schemas import (
     CardSchedule,
     CardState,
     Rating,

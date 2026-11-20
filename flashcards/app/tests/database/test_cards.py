@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from Database import NotFoundError
-from Database.schemas import CardCreate, CardResponse, CardState, CardUpdate
+from app.Database import NotFoundError
+from app.Database.schemas import CardCreate, CardResponse, CardState, CardUpdate
 
 from .conftest import NOW
 

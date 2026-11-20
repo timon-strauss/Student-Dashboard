@@ -2,9 +2,9 @@ from datetime import timedelta, timezone
 
 import pytest
 
-from Database import NotFoundError
-from Database.models import Card, Deck, ReviewLog
-from Database.schemas import ExamCreate, ExamResponse, ExamUpdate, Rating, ReviewLogCreate
+from app.Database import NotFoundError
+from app.Database.models import Card, Deck, ReviewLog
+from app.Database.schemas import ExamCreate, ExamResponse, ExamUpdate, Rating, ReviewLogCreate
 
 from .conftest import NOW
 

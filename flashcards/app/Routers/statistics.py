@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from Services import statistics as statistics_service
+from app.Services import statistics as statistics_service
 
 from .schemas import CardStatusCounts, ConsolidatedPoint, DueCount
 

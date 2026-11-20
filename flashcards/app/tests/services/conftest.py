@@ -4,12 +4,12 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from Database import SQLiteDatabase
-from Routers.schemas import CardCreate, DeckCreate, ExamCreate
-from Services import cards, decks, exams
+from app.Database import SQLiteDatabase
+from app.Routers.schemas import CardCreate, DeckCreate, ExamCreate
+from app.Services import cards, decks, exams
 
-sqlite_module = importlib.import_module("Database.SQLite")
-database_module = importlib.import_module("Database.database")
+sqlite_module = importlib.import_module("app.Database.SQLite")
+database_module = importlib.import_module("app.Database.database")
 
 EXAM_DATE = datetime(2026, 7, 1, 12, 0, tzinfo=timezone.utc)
 
@@ -26,7 +26,7 @@ def isolated_paths(tmp_path, monkeypatch):
 
 @pytest.fixture
 def started(isolated_paths):
-    import Services
+    from app import Services
 
     Services.start()
     yield isolated_paths
@@ -35,7 +35,7 @@ def started(isolated_paths):
 
 @pytest.fixture
 def client(isolated_paths):
-    from main import app
+    from app.main import app
 
     with TestClient(app) as test_client:
         yield test_client

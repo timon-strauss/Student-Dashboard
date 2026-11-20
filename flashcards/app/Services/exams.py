@@ -1,6 +1,6 @@
-from Database import db
-from Database import schemas as db_schemas
-from Routers.schemas import ExamCreate, ExamResponse, ExamUpdate
+from app.Database import db
+from app.Database import schemas as db_schemas
+from app.Routers.schemas import ExamCreate, ExamResponse, ExamUpdate
 
 from ._errors import translate_errors
 

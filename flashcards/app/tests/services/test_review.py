@@ -2,10 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from Database import db
-from Database.schemas import CardSchedule
-from schemas import CardState, Rating
-from Services import NotFoundError, cards, scheduler
+from app.Database import db
+from app.Database.schemas import CardSchedule
+from app.schemas import CardState, Rating
+from app.Services import NotFoundError, cards, scheduler
 
 NOW = datetime(2026, 6, 1, 12, 0, tzinfo=timezone.utc)
 NEW_CARD = CardSchedule(state=CardState.LEARNING, step=0, stability=None, difficulty=None, due=NOW, last_review=None)

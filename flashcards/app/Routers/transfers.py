@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, status
 
-from Services import transfers as transfer_service
+from app.Services import transfers as transfer_service
 
 from .schemas import DeckResponse, DeckTransfer, ExamResponse, ExamTransfer
 

@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from Database import NotFoundError
-from Database.models import Card, Deck, Exam
-from Database.schemas import (
+from app.Database import NotFoundError
+from app.Database.models import Card, Deck, Exam
+from app.Database.schemas import (
     CardContent,
     CardState,
     DeckImport,

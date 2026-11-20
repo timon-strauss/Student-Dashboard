@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, status
 
-from Services import decks as deck_service
+from app.Services import decks as deck_service
 
 from .schemas import DeckCreate, DeckResponse, DeckUpdate
 

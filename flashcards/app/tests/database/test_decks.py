@@ -1,8 +1,8 @@
 import pytest
 
-from Database import NotFoundError
-from Database.models import ReviewLog
-from Database.schemas import DeckCreate, DeckResponse, DeckUpdate, Rating, ReviewLogCreate
+from app.Database import NotFoundError
+from app.Database.models import ReviewLog
+from app.Database.schemas import DeckCreate, DeckResponse, DeckUpdate, Rating, ReviewLogCreate
 
 from .conftest import NOW
 

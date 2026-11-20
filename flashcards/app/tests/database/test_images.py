@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from Database import NotFoundError
-from Database.models import Card
-from Database.schemas import CardCreate, CardUpdate
+from app.Database import NotFoundError
+from app.Database.models import Card
+from app.Database.schemas import CardCreate, CardUpdate
 
 
 @pytest.fixture
