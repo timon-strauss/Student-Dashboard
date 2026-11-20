@@ -6,6 +6,12 @@ class NotFoundError(Exception):
         self.entity_id = entity_id
 
 
+class InvalidDataError(Exception):
+
+    def __init__(self, detail: str):
+        super().__init__(detail)
+
+
 class DatabaseNotStartedError(Exception):
 
     def __init__(self):

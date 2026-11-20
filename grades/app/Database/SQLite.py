@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from sqlalchemy import create_engine, event, make_url, select
+from pydantic import ValidationError
+from sqlalchemy import create_engine, event, func, make_url, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
-from .exceptions import DatabaseNotStartedError, NotFoundError
+from .exceptions import DatabaseNotStartedError, InvalidDataError, NotFoundError
 from .models import Base, Module, Submodule, Year
 from .schemas import (
     ModuleCreate,
@@ -53,7 +54,7 @@ class SQLiteDatabase(DatabaseAPI):
     @classmethod
     def list_years(cls) -> list[YearResponse]:
         with cls._session() as session:
-            years = session.scalars(select(Year).order_by(Year.year, Year.id))
+            years = session.scalars(select(Year).order_by(Year.position))
             return [YearResponse.model_validate(y) for y in years]
 
     @classmethod
@@ -67,7 +68,7 @@ class SQLiteDatabase(DatabaseAPI):
     @classmethod
     def create_year(cls, data: YearCreate) -> YearResponse:
         with cls._session() as session:
-            year = Year(**data.model_dump())
+            year = Year(**data.model_dump(), position=cls._year_count(session))
             session.add(year)
             session.commit()
             session.refresh(year)
@@ -86,13 +87,47 @@ class SQLiteDatabase(DatabaseAPI):
             return YearResponse.model_validate(year)
 
     @classmethod
+    def reposition_year(cls, year_id: int, position: int) -> YearResponse:
+        with cls._session() as session:
+            year = session.get(Year, year_id)
+            if year is None:
+                raise NotFoundError("Year", year_id)
+            old = year.position
+            new = max(0, min(position, cls._year_count(session) - 1))
+            if new < old:
+                session.execute(
+                    update(Year)
+                    .where(Year.position >= new, Year.position < old)
+                    .values(position=Year.position + 1)
+                )
+            elif new > old:
+                session.execute(
+                    update(Year)
+                    .where(Year.position > old, Year.position <= new)
+                    .values(position=Year.position - 1)
+                )
+            year.position = new
+            session.commit()
+            session.refresh(year)
+            return YearResponse.model_validate(year)
+
+    @classmethod
     def delete_year(cls, year_id: int) -> None:
         with cls._session() as session:
             year = session.get(Year, year_id)
             if year is None:
                 raise NotFoundError("Year", year_id)
+            position = year.position
             session.delete(year)
+            session.flush()
+            session.execute(
+                update(Year).where(Year.position > position).values(position=Year.position - 1)
+            )
             session.commit()
+
+    @staticmethod
+    def _year_count(session: Session) -> int:
+        return session.scalar(select(func.count()).select_from(Year))
 
     # --- Modules ---
 
@@ -103,6 +138,14 @@ class SQLiteDatabase(DatabaseAPI):
                 raise NotFoundError("Year", year_id)
             modules = session.scalars(
                 select(Module).where(Module.year_id == year_id).order_by(Module.id)
+            )
+            return [ModuleResponse.model_validate(m) for m in modules]
+
+    @classmethod
+    def list_all_modules(cls) -> list[ModuleResponse]:
+        with cls._session() as session:
+            modules = session.scalars(
+                select(Module).join(Year).order_by(Year.position, Module.id)
             )
             return [ModuleResponse.model_validate(m) for m in modules]
 
@@ -189,7 +232,10 @@ class SQLiteDatabase(DatabaseAPI):
                 raise NotFoundError("Submodule", submodule_id)
             changes = data.model_dump(exclude_unset=True)
             current = SubmoduleResponse.model_validate(submodule).model_dump(exclude={"id"})
-            SubmoduleBase.model_validate({**current, **changes})
+            try:
+                SubmoduleBase.model_validate({**current, **changes})
+            except ValidationError as error:
+                raise InvalidDataError(error.errors()[0]["msg"]) from error
             for field, value in changes.items():
                 setattr(submodule, field, value)
             session.commit()

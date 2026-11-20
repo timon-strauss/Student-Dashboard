@@ -53,6 +53,11 @@ class DatabaseAPI(ABC):
 
     @classmethod
     @abstractmethod
+    def reposition_year(cls, year_id: int, position: int) -> YearResponse:
+        ...
+
+    @classmethod
+    @abstractmethod
     def delete_year(cls, year_id: int) -> None:
         ...
 
@@ -61,6 +66,11 @@ class DatabaseAPI(ABC):
     @classmethod
     @abstractmethod
     def list_modules(cls, year_id: int) -> list[ModuleResponse]:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def list_all_modules(cls) -> list[ModuleResponse]:
         ...
 
     @classmethod

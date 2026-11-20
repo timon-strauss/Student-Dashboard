@@ -35,6 +35,7 @@ class YearResponse(YearBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    position: int
 
 
 # --- Module ---
