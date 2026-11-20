@@ -12,7 +12,7 @@ def session(db):
 
 @pytest.fixture
 def module(session):
-    year = Year(year=2025)
+    year = Year(year="2025")
     session.add(year)
     session.flush()
     module = Module(year_id=year.id, name="m", ects=5)
@@ -21,8 +21,8 @@ def module(session):
     return module
 
 
-def test_year_constraint(session):
-    session.add(Year(year=0))
+def test_year_constraint_rejects_empty(session):
+    session.add(Year(year=""))
 
     with pytest.raises(IntegrityError):
         session.flush()

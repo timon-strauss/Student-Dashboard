@@ -20,8 +20,8 @@ class TestYearSchemas:
         with pytest.raises(ValidationError):
             YearCreate()
 
-    @pytest.mark.parametrize("year", [0, -1, 2025.5, "2025/26"])
-    def test_create_rejects_non_positive_or_non_whole_year(self, year):
+    @pytest.mark.parametrize("year", ["", 2025, None])
+    def test_create_rejects_empty_or_non_string_year(self, year):
         with pytest.raises(ValidationError):
             YearCreate(year=year)
 
@@ -33,7 +33,7 @@ class TestYearSchemas:
         assert YearUpdate().model_dump(exclude_unset=True) == {}
 
     def test_response_from_orm(self):
-        assert YearResponse.model_validate(Year(id=1, year=2025)) == YearResponse(id=1, year=2025)
+        assert YearResponse.model_validate(Year(id=1, year="2025")) == YearResponse(id=1, year="2025")
 
 
 class TestModuleSchemas:

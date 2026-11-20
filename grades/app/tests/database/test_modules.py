@@ -43,8 +43,8 @@ def test_get_missing_raises(db):
 
 
 def test_list_filters_by_year(make_year, make_module, db):
-    year_a = make_year(year=2025)
-    year_b = make_year(year=2026)
+    year_a = make_year(year="2025")
+    year_b = make_year(year="2026")
     a1 = make_module(year_a.id)
     a2 = make_module(year_a.id)
     make_module(year_b.id)
@@ -73,8 +73,8 @@ def test_update_clears_grade(make_year, make_module, db):
 
 
 def test_update_moves_to_other_year(make_year, make_module, db):
-    old = make_year(year=2025)
-    new = make_year(year=2026)
+    old = make_year(year="2025")
+    new = make_year(year="2026")
     module = make_module(old.id)
 
     db.update_module(module.id, ModuleUpdate(year_id=new.id))

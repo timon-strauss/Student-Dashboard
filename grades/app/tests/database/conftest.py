@@ -39,7 +39,7 @@ def db(start_db, isolated_paths):
 
 @pytest.fixture
 def make_year(db):
-    def _make(year=2025):
+    def _make(year="2025"):
         return db.create_year(YearCreate(year=year))
 
     return _make

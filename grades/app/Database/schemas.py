@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 Grade = Annotated[float, Field(ge=1.0, le=6.0)]
-YearNumber = Annotated[int, Field(gt=0)]
+YearLabel = Annotated[str, Field(min_length=1)]
 Ects = Annotated[int, Field(gt=0)]
 MaxPoints = Annotated[float, Field(gt=0)]
 ReachedPoints = Annotated[float, Field(ge=0)]
@@ -13,7 +13,7 @@ Weight = Annotated[float, Field(gt=0)]
 
 
 class YearBase(BaseModel):
-    year: YearNumber
+    year: YearLabel
 
 
 class YearCreate(YearBase):
@@ -21,7 +21,7 @@ class YearCreate(YearBase):
 
 
 class YearUpdate(BaseModel):
-    year: YearNumber | None = None
+    year: YearLabel | None = None
 
     @field_validator("year")
     @classmethod

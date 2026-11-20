@@ -5,10 +5,10 @@ from app.Database.schemas import YearCreate, YearResponse, YearUpdate
 
 
 def test_create_and_get(db):
-    year = db.create_year(YearCreate(year=2025))
+    year = db.create_year(YearCreate(year="2025"))
 
     assert isinstance(year, YearResponse)
-    assert year.year == 2025
+    assert year.year == "2025"
     assert db.get_year(year.id) == year
 
 
@@ -20,8 +20,8 @@ def test_get_missing_raises(db):
 
 
 def test_list_ordered_by_year(make_year, db):
-    later = make_year(year=2026)
-    earlier = make_year(year=2025)
+    later = make_year(year="2026")
+    earlier = make_year(year="2025")
 
     assert db.list_years() == [earlier, later]
 
@@ -33,9 +33,9 @@ def test_list_empty(db):
 def test_update(make_year, db):
     year = make_year()
 
-    updated = db.update_year(year.id, YearUpdate(year=2026))
+    updated = db.update_year(year.id, YearUpdate(year="2026"))
 
-    assert updated.year == 2026
+    assert updated.year == "2026"
     assert db.get_year(year.id) == updated
 
 
@@ -47,7 +47,7 @@ def test_update_empty_keeps_values(make_year, db):
 
 def test_update_missing_raises(db):
     with pytest.raises(NotFoundError):
-        db.update_year(1, YearUpdate(year=2026))
+        db.update_year(1, YearUpdate(year="2026"))
 
 
 def test_delete(make_year, db):

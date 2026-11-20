@@ -8,10 +8,10 @@ class Base(DeclarativeBase):
 
 class Year(Base):
     __tablename__ = "years"
-    __table_args__ = (CheckConstraint("year > 0", name="ck_years_year"),)
+    __table_args__ = (CheckConstraint("year <> ''", name="ck_years_year"),)
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    year: Mapped[int]
+    year: Mapped[str]
 
     modules: Mapped[list["Module"]] = relationship(
         back_populates="year", cascade="all, delete-orphan", passive_deletes=True
