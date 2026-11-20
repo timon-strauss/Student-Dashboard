@@ -1,0 +1,1019 @@
+{
+  "source": "Punkte- und Noten-Tabellen (14.10.2022)",
+  "tables": [
+    {
+      "max_points": 60,
+      "thresholds": [
+        {
+          "min_points": 59.5,
+          "grade": 1.0
+        },
+        {
+          "min_points": 58.5,
+          "grade": 1.1
+        },
+        {
+          "min_points": 57.5,
+          "grade": 1.2
+        },
+        {
+          "min_points": 56.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 55.5,
+          "grade": 1.4
+        },
+        {
+          "min_points": 54.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 53.5,
+          "grade": 1.6
+        },
+        {
+          "min_points": 52.5,
+          "grade": 1.7
+        },
+        {
+          "min_points": 51.5,
+          "grade": 1.8
+        },
+        {
+          "min_points": 50.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 49.5,
+          "grade": 2.0
+        },
+        {
+          "min_points": 48.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 47.5,
+          "grade": 2.2
+        },
+        {
+          "min_points": 46.5,
+          "grade": 2.3
+        },
+        {
+          "min_points": 45.5,
+          "grade": 2.4
+        },
+        {
+          "min_points": 44.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 43.5,
+          "grade": 2.6
+        },
+        {
+          "min_points": 42.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 41.5,
+          "grade": 2.8
+        },
+        {
+          "min_points": 40.5,
+          "grade": 2.9
+        },
+        {
+          "min_points": 39.5,
+          "grade": 3.0
+        },
+        {
+          "min_points": 38.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 37.5,
+          "grade": 3.2
+        },
+        {
+          "min_points": 36.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 35.5,
+          "grade": 3.4
+        },
+        {
+          "min_points": 34.5,
+          "grade": 3.5
+        },
+        {
+          "min_points": 33.5,
+          "grade": 3.6
+        },
+        {
+          "min_points": 32.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 31.5,
+          "grade": 3.8
+        },
+        {
+          "min_points": 30.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 30,
+          "grade": 4.0
+        },
+        {
+          "min_points": 28.5,
+          "grade": 4.1
+        },
+        {
+          "min_points": 27.5,
+          "grade": 4.2
+        },
+        {
+          "min_points": 26.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 25.5,
+          "grade": 4.4
+        },
+        {
+          "min_points": 24.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 23.5,
+          "grade": 4.6
+        },
+        {
+          "min_points": 22.5,
+          "grade": 4.7
+        },
+        {
+          "min_points": 21.5,
+          "grade": 4.8
+        },
+        {
+          "min_points": 20.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    },
+    {
+      "max_points": 90,
+      "thresholds": [
+        {
+          "min_points": 89,
+          "grade": 1.0
+        },
+        {
+          "min_points": 87.5,
+          "grade": 1.1
+        },
+        {
+          "min_points": 86,
+          "grade": 1.2
+        },
+        {
+          "min_points": 84.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 83,
+          "grade": 1.4
+        },
+        {
+          "min_points": 81.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 80,
+          "grade": 1.6
+        },
+        {
+          "min_points": 78.5,
+          "grade": 1.7
+        },
+        {
+          "min_points": 77,
+          "grade": 1.8
+        },
+        {
+          "min_points": 75.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 74,
+          "grade": 2.0
+        },
+        {
+          "min_points": 72.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 71,
+          "grade": 2.2
+        },
+        {
+          "min_points": 69.5,
+          "grade": 2.3
+        },
+        {
+          "min_points": 68,
+          "grade": 2.4
+        },
+        {
+          "min_points": 66.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 65,
+          "grade": 2.6
+        },
+        {
+          "min_points": 63.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 62,
+          "grade": 2.8
+        },
+        {
+          "min_points": 60.5,
+          "grade": 2.9
+        },
+        {
+          "min_points": 59,
+          "grade": 3.0
+        },
+        {
+          "min_points": 57.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 56,
+          "grade": 3.2
+        },
+        {
+          "min_points": 54.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 53,
+          "grade": 3.4
+        },
+        {
+          "min_points": 51.5,
+          "grade": 3.5
+        },
+        {
+          "min_points": 50,
+          "grade": 3.6
+        },
+        {
+          "min_points": 48.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 47,
+          "grade": 3.8
+        },
+        {
+          "min_points": 45.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 45,
+          "grade": 4.0
+        },
+        {
+          "min_points": 42.5,
+          "grade": 4.1
+        },
+        {
+          "min_points": 41,
+          "grade": 4.2
+        },
+        {
+          "min_points": 39.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 38,
+          "grade": 4.4
+        },
+        {
+          "min_points": 36.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 35,
+          "grade": 4.6
+        },
+        {
+          "min_points": 33.5,
+          "grade": 4.7
+        },
+        {
+          "min_points": 32,
+          "grade": 4.8
+        },
+        {
+          "min_points": 30.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    },
+    {
+      "max_points": 100,
+      "thresholds": [
+        {
+          "min_points": 98.5,
+          "grade": 1.0
+        },
+        {
+          "min_points": 97,
+          "grade": 1.1
+        },
+        {
+          "min_points": 95.5,
+          "grade": 1.2
+        },
+        {
+          "min_points": 93.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 92,
+          "grade": 1.4
+        },
+        {
+          "min_points": 90.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 88.5,
+          "grade": 1.6
+        },
+        {
+          "min_points": 87,
+          "grade": 1.7
+        },
+        {
+          "min_points": 85.5,
+          "grade": 1.8
+        },
+        {
+          "min_points": 83.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 82,
+          "grade": 2.0
+        },
+        {
+          "min_points": 80.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 78.5,
+          "grade": 2.2
+        },
+        {
+          "min_points": 77,
+          "grade": 2.3
+        },
+        {
+          "min_points": 75.5,
+          "grade": 2.4
+        },
+        {
+          "min_points": 73.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 72,
+          "grade": 2.6
+        },
+        {
+          "min_points": 70.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 68.5,
+          "grade": 2.8
+        },
+        {
+          "min_points": 67,
+          "grade": 2.9
+        },
+        {
+          "min_points": 65.5,
+          "grade": 3.0
+        },
+        {
+          "min_points": 63.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 62,
+          "grade": 3.2
+        },
+        {
+          "min_points": 60.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 58.5,
+          "grade": 3.4
+        },
+        {
+          "min_points": 57,
+          "grade": 3.5
+        },
+        {
+          "min_points": 55.5,
+          "grade": 3.6
+        },
+        {
+          "min_points": 53.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 52,
+          "grade": 3.8
+        },
+        {
+          "min_points": 50.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 50,
+          "grade": 4.0
+        },
+        {
+          "min_points": 47,
+          "grade": 4.1
+        },
+        {
+          "min_points": 45.5,
+          "grade": 4.2
+        },
+        {
+          "min_points": 43.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 42,
+          "grade": 4.4
+        },
+        {
+          "min_points": 40.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 38.5,
+          "grade": 4.6
+        },
+        {
+          "min_points": 37,
+          "grade": 4.7
+        },
+        {
+          "min_points": 35.5,
+          "grade": 4.8
+        },
+        {
+          "min_points": 33.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    },
+    {
+      "max_points": 120,
+      "thresholds": [
+        {
+          "min_points": 118.5,
+          "grade": 1.0
+        },
+        {
+          "min_points": 116.5,
+          "grade": 1.1
+        },
+        {
+          "min_points": 114.5,
+          "grade": 1.2
+        },
+        {
+          "min_points": 112.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 110.5,
+          "grade": 1.4
+        },
+        {
+          "min_points": 108.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 106.5,
+          "grade": 1.6
+        },
+        {
+          "min_points": 104.5,
+          "grade": 1.7
+        },
+        {
+          "min_points": 102.5,
+          "grade": 1.8
+        },
+        {
+          "min_points": 100.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 98.5,
+          "grade": 2.0
+        },
+        {
+          "min_points": 96.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 94.5,
+          "grade": 2.2
+        },
+        {
+          "min_points": 92.5,
+          "grade": 2.3
+        },
+        {
+          "min_points": 90.5,
+          "grade": 2.4
+        },
+        {
+          "min_points": 88.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 86.5,
+          "grade": 2.6
+        },
+        {
+          "min_points": 84.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 82.5,
+          "grade": 2.8
+        },
+        {
+          "min_points": 80.5,
+          "grade": 2.9
+        },
+        {
+          "min_points": 78.5,
+          "grade": 3.0
+        },
+        {
+          "min_points": 76.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 74.5,
+          "grade": 3.2
+        },
+        {
+          "min_points": 72.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 70.5,
+          "grade": 3.4
+        },
+        {
+          "min_points": 68.5,
+          "grade": 3.5
+        },
+        {
+          "min_points": 66.5,
+          "grade": 3.6
+        },
+        {
+          "min_points": 64.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 62.5,
+          "grade": 3.8
+        },
+        {
+          "min_points": 60.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 60,
+          "grade": 4.0
+        },
+        {
+          "min_points": 56.5,
+          "grade": 4.1
+        },
+        {
+          "min_points": 54.5,
+          "grade": 4.2
+        },
+        {
+          "min_points": 52.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 50.5,
+          "grade": 4.4
+        },
+        {
+          "min_points": 48.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 46.5,
+          "grade": 4.6
+        },
+        {
+          "min_points": 44.5,
+          "grade": 4.7
+        },
+        {
+          "min_points": 42.5,
+          "grade": 4.8
+        },
+        {
+          "min_points": 40.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    },
+    {
+      "max_points": 150,
+      "thresholds": [
+        {
+          "min_points": 148,
+          "grade": 1.0
+        },
+        {
+          "min_points": 145.5,
+          "grade": 1.1
+        },
+        {
+          "min_points": 143,
+          "grade": 1.2
+        },
+        {
+          "min_points": 140.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 138,
+          "grade": 1.4
+        },
+        {
+          "min_points": 135.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 133,
+          "grade": 1.6
+        },
+        {
+          "min_points": 130.5,
+          "grade": 1.7
+        },
+        {
+          "min_points": 128,
+          "grade": 1.8
+        },
+        {
+          "min_points": 125.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 123,
+          "grade": 2.0
+        },
+        {
+          "min_points": 120.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 118,
+          "grade": 2.2
+        },
+        {
+          "min_points": 115.5,
+          "grade": 2.3
+        },
+        {
+          "min_points": 113,
+          "grade": 2.4
+        },
+        {
+          "min_points": 110.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 108,
+          "grade": 2.6
+        },
+        {
+          "min_points": 105.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 103,
+          "grade": 2.8
+        },
+        {
+          "min_points": 100.5,
+          "grade": 2.9
+        },
+        {
+          "min_points": 98,
+          "grade": 3.0
+        },
+        {
+          "min_points": 95.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 93,
+          "grade": 3.2
+        },
+        {
+          "min_points": 90.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 88,
+          "grade": 3.4
+        },
+        {
+          "min_points": 85.5,
+          "grade": 3.5
+        },
+        {
+          "min_points": 83,
+          "grade": 3.6
+        },
+        {
+          "min_points": 80.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 78,
+          "grade": 3.8
+        },
+        {
+          "min_points": 75.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 75,
+          "grade": 4.0
+        },
+        {
+          "min_points": 70.5,
+          "grade": 4.1
+        },
+        {
+          "min_points": 68,
+          "grade": 4.2
+        },
+        {
+          "min_points": 65.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 63,
+          "grade": 4.4
+        },
+        {
+          "min_points": 60.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 58,
+          "grade": 4.6
+        },
+        {
+          "min_points": 55.5,
+          "grade": 4.7
+        },
+        {
+          "min_points": 53,
+          "grade": 4.8
+        },
+        {
+          "min_points": 50.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    },
+    {
+      "max_points": 180,
+      "thresholds": [
+        {
+          "min_points": 177.5,
+          "grade": 1.0
+        },
+        {
+          "min_points": 174.5,
+          "grade": 1.1
+        },
+        {
+          "min_points": 171.5,
+          "grade": 1.2
+        },
+        {
+          "min_points": 168.5,
+          "grade": 1.3
+        },
+        {
+          "min_points": 165.5,
+          "grade": 1.4
+        },
+        {
+          "min_points": 162.5,
+          "grade": 1.5
+        },
+        {
+          "min_points": 159.5,
+          "grade": 1.6
+        },
+        {
+          "min_points": 156.5,
+          "grade": 1.7
+        },
+        {
+          "min_points": 153.5,
+          "grade": 1.8
+        },
+        {
+          "min_points": 150.5,
+          "grade": 1.9
+        },
+        {
+          "min_points": 147.5,
+          "grade": 2.0
+        },
+        {
+          "min_points": 144.5,
+          "grade": 2.1
+        },
+        {
+          "min_points": 141.5,
+          "grade": 2.2
+        },
+        {
+          "min_points": 138.5,
+          "grade": 2.3
+        },
+        {
+          "min_points": 135.5,
+          "grade": 2.4
+        },
+        {
+          "min_points": 132.5,
+          "grade": 2.5
+        },
+        {
+          "min_points": 129.5,
+          "grade": 2.6
+        },
+        {
+          "min_points": 126.5,
+          "grade": 2.7
+        },
+        {
+          "min_points": 123.5,
+          "grade": 2.8
+        },
+        {
+          "min_points": 120.5,
+          "grade": 2.9
+        },
+        {
+          "min_points": 117.5,
+          "grade": 3.0
+        },
+        {
+          "min_points": 114.5,
+          "grade": 3.1
+        },
+        {
+          "min_points": 111.5,
+          "grade": 3.2
+        },
+        {
+          "min_points": 108.5,
+          "grade": 3.3
+        },
+        {
+          "min_points": 105.5,
+          "grade": 3.4
+        },
+        {
+          "min_points": 102.5,
+          "grade": 3.5
+        },
+        {
+          "min_points": 99.5,
+          "grade": 3.6
+        },
+        {
+          "min_points": 96.5,
+          "grade": 3.7
+        },
+        {
+          "min_points": 93.5,
+          "grade": 3.8
+        },
+        {
+          "min_points": 90.5,
+          "grade": 3.9
+        },
+        {
+          "min_points": 90,
+          "grade": 4.0
+        },
+        {
+          "min_points": 84.5,
+          "grade": 4.1
+        },
+        {
+          "min_points": 81.5,
+          "grade": 4.2
+        },
+        {
+          "min_points": 78.5,
+          "grade": 4.3
+        },
+        {
+          "min_points": 75.5,
+          "grade": 4.4
+        },
+        {
+          "min_points": 72.5,
+          "grade": 4.5
+        },
+        {
+          "min_points": 69.5,
+          "grade": 4.6
+        },
+        {
+          "min_points": 66.5,
+          "grade": 4.7
+        },
+        {
+          "min_points": 63.5,
+          "grade": 4.8
+        },
+        {
+          "min_points": 60.5,
+          "grade": 4.9
+        },
+        {
+          "min_points": 0,
+          "grade": 5.0
+        }
+      ]
+    }
+  ]
+}
