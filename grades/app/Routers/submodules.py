@@ -9,7 +9,7 @@ router = APIRouter(prefix="/submodules", tags=["submodules"])
 
 @router.get("", response_model=list[SubmoduleResponse])
 def list_submodules(
-    module_id: int = Query(description="Submodules of this module"),
+    module_id: int | None = Query(default=None, description="Submodules of this module; omitted returns all submodules"),
 ) -> list[SubmoduleResponse]:
     return submodule_service.list_submodules(module_id)
 

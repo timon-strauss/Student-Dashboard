@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 const BASE = '/api'
+const GRADES_BASE = '/grades-api'
 
 function errorMessage(detail, status) {
   if (typeof detail === 'string') return detail
@@ -8,10 +9,10 @@ function errorMessage(detail, status) {
   return `Anfrage fehlgeschlagen (${status})`
 }
 
-async function request(path, options) {
+async function send(url, options) {
   let res
   try {
-    res = await fetch(BASE + path, options)
+    res = await fetch(url, options)
   } catch {
     throw new Error('Server nicht erreichbar. Läuft das Backend?')
   }
@@ -26,6 +27,9 @@ async function request(path, options) {
   }
   return res.status === 204 ? null : res.json()
 }
+
+const request = (path, options) => send(BASE + path, options)
+const gradesRequest = (path, options) => send(GRADES_BASE + path, options)
 
 const json = (method, body) => ({
   method,
@@ -72,6 +76,54 @@ export const api = {
   exportDeck: (id) => request(`/transfer/decks/${id}`),
   importExam: (body) => request('/transfer/exams', json('POST', body)),
   importDeck: (body, examId) => request(`/transfer/decks${examId ? `?exam_id=${examId}` : ''}`, json('POST', body)),
+}
+
+export const gradesApi = {
+  years: () => gradesRequest('/years'),
+  createYear: (body) => gradesRequest('/years', json('POST', body)),
+  updateYear: (id, body) => gradesRequest(`/years/${id}`, json('PATCH', body)),
+  repositionYear: (id, position) => gradesRequest(`/years/${id}/position`, json('PUT', { position })),
+  deleteYear: (id) => gradesRequest(`/years/${id}`, { method: 'DELETE' }),
+
+  modules: () => gradesRequest('/modules'),
+  createModule: (body) => gradesRequest('/modules', json('POST', body)),
+  updateModule: (id, body) => gradesRequest(`/modules/${id}`, json('PATCH', body)),
+  deleteModule: (id) => gradesRequest(`/modules/${id}`, { method: 'DELETE' }),
+
+  submodules: () => gradesRequest('/submodules'),
+  createSubmodule: (body) => gradesRequest('/submodules', json('POST', body)),
+  updateSubmodule: (id, body) => gradesRequest(`/submodules/${id}`, json('PATCH', body)),
+  deleteSubmodule: (id) => gradesRequest(`/submodules/${id}`, { method: 'DELETE' }),
+
+  overall: () => gradesRequest('/statistics/overall'),
+  progression: () => gradesRequest('/statistics/progression'),
+  maxPoints: () => gradesRequest('/grading/max-points'),
+}
+
+export async function loadGradesOverview() {
+  const [overall, progression] = await Promise.all([gradesApi.overall(), gradesApi.progression()])
+  return { overall, progression }
+}
+
+export async function loadGradesTree() {
+  const [years, modules, submodules, progression, overall, maxPoints] = await Promise.all([
+    gradesApi.years(),
+    gradesApi.modules(),
+    gradesApi.submodules(),
+    gradesApi.progression(),
+    gradesApi.overall(),
+    gradesApi.maxPoints(),
+  ])
+  const yearStats = new Map(progression.map((p) => [p.year_id, p]))
+  const tree = years.map((year) => ({
+    ...year,
+    grade: yearStats.get(year.id)?.grade ?? null,
+    ects: yearStats.get(year.id)?.ects ?? 0,
+    modules: modules
+      .filter((m) => m.year_id === year.id)
+      .map((module) => ({ ...module, submodules: submodules.filter((s) => s.module_id === module.id) })),
+  }))
+  return { tree, overall, maxPoints }
 }
 
 const withStats = (decks) =>

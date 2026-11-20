@@ -6,6 +6,8 @@ const PATHS = {
   upload: 'M12 16V5M7 9l5-5 5 5M5 20h14',
   back: 'M15 6l-6 6 6 6',
   next: 'M9 6l6 6-6 6',
+  up: 'M6 15l6-6 6 6',
+  down: 'M6 9l6 6 6-6',
   close: 'M6 6l12 12M18 6L6 18',
   grip: 'M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01',
   image: 'M4 5h16v14H4zM4 15l4.5-4.5L13 15l3-3 4 4M15 9h.01',

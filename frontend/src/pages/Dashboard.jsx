@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, loadExamsOverview, loadLooseDecks, useLoad } from '../api.js'
+import { api, loadExamsOverview, loadGradesOverview, loadLooseDecks, useLoad } from '../api.js'
 import Icon from '../components/Icon.jsx'
 import { ExamForm, DeckForm, ImportForm } from '../components/Forms.jsx'
+import { GradeFigure, GradeTiles } from '../components/Grades.jsx'
 import {
   OverviewCard,
   Loading,
@@ -13,6 +14,36 @@ import {
   isFinished,
   totalCards,
 } from '../components/Stats.jsx'
+
+function GradesSection() {
+  const { data, error, loading } = useLoad(loadGradesOverview, [])
+
+  return (
+    <section>
+      <div className="section-head">
+        <h2 className="section-title">Noten</h2>
+        <Link to="/grades" className="btn btn-small">Details <Icon name="next" size={16} /></Link>
+      </div>
+      {error ? (
+        <p className="muted small">Noten konnten nicht geladen werden: {error.message}</p>
+      ) : loading && !data ? (
+        <p className="muted small">Lädt …</p>
+      ) : data.progression.length === 0 ? (
+        <div className="empty">
+          <p className="muted">Noch keine Noten erfasst.</p>
+          <Link to="/grades" className="btn btn-primary">Erstes Jahr anlegen</Link>
+        </div>
+      ) : (
+        <div className="panel panel-flush">
+          <div className="charts charts-grades">
+            <GradeTiles overall={data.overall} />
+            <GradeFigure progression={data.progression} />
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -76,6 +107,8 @@ export default function Dashboard() {
           </p>
         </div>
       )}
+
+      <GradesSection />
 
       {upcoming.length > 0 && (
         <section>

@@ -11,8 +11,9 @@ def _to_response(submodule: db_schemas.SubmoduleResponse) -> SubmoduleResponse:
 
 
 @translate_errors
-def list_submodules(module_id: int) -> list[SubmoduleResponse]:
-    return [_to_response(submodule) for submodule in db.list_submodules(module_id)]
+def list_submodules(module_id: int | None) -> list[SubmoduleResponse]:
+    submodules = db.list_all_submodules() if module_id is None else db.list_submodules(module_id)
+    return [_to_response(submodule) for submodule in submodules]
 
 
 @translate_errors

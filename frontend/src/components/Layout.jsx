@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import Icon from './Icon.jsx'
 
 export function Logo() {
@@ -60,7 +60,10 @@ export default function Layout() {
           <Logo />
           <span>Karteikarten</span>
         </Link>
-        <ThemeToggle />
+        <nav className="topnav">
+          <NavLink to="/grades" className="btn btn-ghost btn-small">Noten</NavLink>
+          <ThemeToggle />
+        </nav>
       </header>
       <main className="page">
         <Outlet />

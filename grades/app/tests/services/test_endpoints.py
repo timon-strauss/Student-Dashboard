@@ -86,7 +86,7 @@ def test_submodule_endpoints(client):
     assert set(submodule) == {"id", "module_id", "name", "max_points", "reached_points", "weight", "grade"}
 
     assert client.get("/api/submodules", params={"module_id": module_id}).json() == [submodule]
-    assert client.get("/api/submodules").status_code == 422
+    assert client.get("/api/submodules").json() == [submodule]
     assert client.get("/api/submodules", params={"module_id": 99}).status_code == 404
 
     patched = client.patch(f"/api/submodules/{submodule['id']}", json={"reached_points": 80})
@@ -210,3 +210,7 @@ def test_deleting_last_submodule_returns_to_manual_grading(client):
     module = client.get(f"/api/modules/{module_id}").json()
     assert (module["grade"], module["grade_from_submodules"]) == (None, False)
     assert client.patch(f"/api/modules/{module_id}", json={"grade": 2.0}).status_code == 200
+
+
+def test_supported_max_points(client):
+    assert client.get("/api/grading/max-points").json() == [60, 90, 100, 120, 150, 180]
