@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 
 import pytest
 
-from Database import db
-from Routers.schemas import CardTransfer, DeckTransfer, ExamTransfer, ImageTransfer
-from schemas import CardState, Rating
-from Services import InvalidImageError, NotFoundError, cards, decks, exams, images, transfers
+from app.Database import db
+from app.Routers.schemas import CardTransfer, DeckTransfer, ExamTransfer, ImageTransfer
+from app.schemas import CardState, Rating
+from app.Services import InvalidImageError, NotFoundError, cards, decks, exams, images, transfers
 
 EXAM_DATE = datetime(2026, 12, 1, 9, 0, tzinfo=timezone.utc)
 PNG = ImageTransfer(media_type="image/png", data=base64.b64encode(b"png-bytes").decode())

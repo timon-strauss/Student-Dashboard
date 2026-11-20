@@ -3,7 +3,7 @@ from pathlib import PurePath
 from fastapi import APIRouter, HTTPException, Path, UploadFile, status
 from fastapi.responses import FileResponse
 
-from Services import images as image_service
+from app.Services import images as image_service
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 

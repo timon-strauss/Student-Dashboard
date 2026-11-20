@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import AwareDatetime, BaseModel, Field, ValidationInfo, field_validator
 
-from schemas import CardState, Rating
+from app.schemas import CardState, Rating
 
 
 def _not_null(value, info: ValidationInfo):

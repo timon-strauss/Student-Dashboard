@@ -1,6 +1,6 @@
 import pytest
 
-from Database import DatabaseNotStartedError, NotFoundError
+from app.Database import DatabaseNotStartedError, NotFoundError
 
 
 def test_not_found_error_message_and_attributes():

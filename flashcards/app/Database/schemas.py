@@ -1,6 +1,6 @@
 from pydantic import AwareDatetime, BaseModel, ConfigDict, ValidationInfo, field_validator
 
-from schemas import CardState, Rating
+from app.schemas import CardState, Rating
 
 # --- Exam ---
 

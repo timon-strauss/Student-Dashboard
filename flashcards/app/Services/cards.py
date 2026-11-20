@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
-from Database import db
-from Database import schemas as db_schemas
-from Routers.schemas import CardCreate, CardResponse, CardUpdate
-from schemas import Rating
+from app.Database import db
+from app.Database import schemas as db_schemas
+from app.Routers.schemas import CardCreate, CardResponse, CardUpdate
+from app.schemas import Rating
 
 from . import scheduler
 from ._errors import translate_errors

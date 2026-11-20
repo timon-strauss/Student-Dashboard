@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, status
 
-from Services import cards as card_service
+from app.Services import cards as card_service
 
 from .schemas import CardCreate, CardReposition, CardResponse, CardReview, CardUpdate
 

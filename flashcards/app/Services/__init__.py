@@ -1,4 +1,4 @@
-from Database import db
+from app.Database import db
 
 from . import cards, config, decks, exams, images, scheduler, statistics, transfers
 from .exceptions import InvalidImageError, NotFoundError

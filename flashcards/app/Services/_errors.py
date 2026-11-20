@@ -2,7 +2,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import ParamSpec, TypeVar
 
-from Database import NotFoundError as DatabaseNotFoundError
+from app.Database import NotFoundError as DatabaseNotFoundError
 
 from .exceptions import NotFoundError
 

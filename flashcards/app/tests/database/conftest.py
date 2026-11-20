@@ -3,12 +3,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from Database import SQLiteDatabase
-from Database.models import Card
-from Database.schemas import CardCreate, DeckCreate, ExamCreate
+from app.Database import SQLiteDatabase
+from app.Database.models import Card
+from app.Database.schemas import CardCreate, DeckCreate, ExamCreate
 
-sqlite_module = importlib.import_module("Database.SQLite")
-database_module = importlib.import_module("Database.database")
+sqlite_module = importlib.import_module("app.Database.SQLite")
+database_module = importlib.import_module("app.Database.database")
 
 NOW = datetime(2026, 6, 1, 12, 0, tzinfo=timezone.utc)
 

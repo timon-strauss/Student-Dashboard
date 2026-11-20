@@ -2,11 +2,11 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
-from Database import SQLiteDatabase, db
-from Database.models import Card
-from Database.schemas import CardSchedule, ReviewLogCreate
-from schemas import CardState, Rating
-from Services import NotFoundError, cards, config, scheduler, statistics
+from app.Database import SQLiteDatabase, db
+from app.Database.models import Card
+from app.Database.schemas import CardSchedule, ReviewLogCreate
+from app.schemas import CardState, Rating
+from app.Services import NotFoundError, cards, config, scheduler, statistics
 
 CREATED = datetime(2026, 5, 1, 10, 0, tzinfo=timezone.utc)
 EXAM_DATE = datetime(2026, 5, 31, 9, 0, tzinfo=timezone.utc)

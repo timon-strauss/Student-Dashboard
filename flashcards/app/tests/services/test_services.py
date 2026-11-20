@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from Routers.schemas import CardResponse, CardUpdate, DeckResponse, DeckUpdate, ExamResponse, ExamUpdate
-from Services import InvalidImageError, NotFoundError, cards, decks, exams, images
+from app.Routers.schemas import CardResponse, CardUpdate, DeckResponse, DeckUpdate, ExamResponse, ExamUpdate
+from app.Services import InvalidImageError, NotFoundError, cards, decks, exams, images
 
 
 def test_exam_crud(make_exam):

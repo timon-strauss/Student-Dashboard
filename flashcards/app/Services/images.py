@@ -1,8 +1,8 @@
 import mimetypes
 from pathlib import Path, PurePath
 
-from Database import NotFoundError as DatabaseNotFoundError
-from Database import db
+from app.Database import NotFoundError as DatabaseNotFoundError
+from app.Database import db
 
 from ._errors import translate_errors
 from .exceptions import InvalidImageError

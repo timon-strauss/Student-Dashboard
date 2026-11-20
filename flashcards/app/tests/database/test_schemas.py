@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from Database.models import Card, Deck, Exam
-from Database.schemas import (
+from app.Database.models import Card, Deck, Exam
+from app.Database.schemas import (
     CardCreate,
     CardResponse,
     CardSchedule,
