@@ -1,11 +1,23 @@
 from pathlib import Path
 
-from sqlalchemy import create_engine, event, make_url
+from sqlalchemy import create_engine, event, make_url, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from .database import DATABASE_URL, PROJECT_ROOT, DatabaseAPI, create_folders
-from .exceptions import DatabaseNotStartedError
-from .models import Base
+from .exceptions import DatabaseNotStartedError, NotFoundError
+from .models import Base, Module, Submodule, Year
+from .schemas import (
+    ModuleCreate,
+    ModuleResponse,
+    ModuleUpdate,
+    SubmoduleBase,
+    SubmoduleCreate,
+    SubmoduleResponse,
+    SubmoduleUpdate,
+    YearCreate,
+    YearResponse,
+    YearUpdate,
+)
 
 
 class SQLiteDatabase(DatabaseAPI):
@@ -35,3 +47,160 @@ class SQLiteDatabase(DatabaseAPI):
         if cls._session_factory is None:
             raise DatabaseNotStartedError()
         return cls._session_factory()
+
+    # --- Years ---
+
+    @classmethod
+    def list_years(cls) -> list[YearResponse]:
+        with cls._session() as session:
+            years = session.scalars(select(Year).order_by(Year.year, Year.id))
+            return [YearResponse.model_validate(y) for y in years]
+
+    @classmethod
+    def get_year(cls, year_id: int) -> YearResponse:
+        with cls._session() as session:
+            year = session.get(Year, year_id)
+            if year is None:
+                raise NotFoundError("Year", year_id)
+            return YearResponse.model_validate(year)
+
+    @classmethod
+    def create_year(cls, data: YearCreate) -> YearResponse:
+        with cls._session() as session:
+            year = Year(**data.model_dump())
+            session.add(year)
+            session.commit()
+            session.refresh(year)
+            return YearResponse.model_validate(year)
+
+    @classmethod
+    def update_year(cls, year_id: int, data: YearUpdate) -> YearResponse:
+        with cls._session() as session:
+            year = session.get(Year, year_id)
+            if year is None:
+                raise NotFoundError("Year", year_id)
+            for field, value in data.model_dump(exclude_unset=True).items():
+                setattr(year, field, value)
+            session.commit()
+            session.refresh(year)
+            return YearResponse.model_validate(year)
+
+    @classmethod
+    def delete_year(cls, year_id: int) -> None:
+        with cls._session() as session:
+            year = session.get(Year, year_id)
+            if year is None:
+                raise NotFoundError("Year", year_id)
+            session.delete(year)
+            session.commit()
+
+    # --- Modules ---
+
+    @classmethod
+    def list_modules(cls, year_id: int) -> list[ModuleResponse]:
+        with cls._session() as session:
+            if session.get(Year, year_id) is None:
+                raise NotFoundError("Year", year_id)
+            modules = session.scalars(
+                select(Module).where(Module.year_id == year_id).order_by(Module.id)
+            )
+            return [ModuleResponse.model_validate(m) for m in modules]
+
+    @classmethod
+    def get_module(cls, module_id: int) -> ModuleResponse:
+        with cls._session() as session:
+            module = session.get(Module, module_id)
+            if module is None:
+                raise NotFoundError("Module", module_id)
+            return ModuleResponse.model_validate(module)
+
+    @classmethod
+    def create_module(cls, data: ModuleCreate) -> ModuleResponse:
+        with cls._session() as session:
+            if session.get(Year, data.year_id) is None:
+                raise NotFoundError("Year", data.year_id)
+            module = Module(**data.model_dump())
+            session.add(module)
+            session.commit()
+            session.refresh(module)
+            return ModuleResponse.model_validate(module)
+
+    @classmethod
+    def update_module(cls, module_id: int, data: ModuleUpdate) -> ModuleResponse:
+        with cls._session() as session:
+            module = session.get(Module, module_id)
+            if module is None:
+                raise NotFoundError("Module", module_id)
+            changes = data.model_dump(exclude_unset=True)
+            new_year_id = changes.get("year_id")
+            if new_year_id is not None and session.get(Year, new_year_id) is None:
+                raise NotFoundError("Year", new_year_id)
+            for field, value in changes.items():
+                setattr(module, field, value)
+            session.commit()
+            session.refresh(module)
+            return ModuleResponse.model_validate(module)
+
+    @classmethod
+    def delete_module(cls, module_id: int) -> None:
+        with cls._session() as session:
+            module = session.get(Module, module_id)
+            if module is None:
+                raise NotFoundError("Module", module_id)
+            session.delete(module)
+            session.commit()
+
+    # --- Submodules ---
+
+    @classmethod
+    def list_submodules(cls, module_id: int) -> list[SubmoduleResponse]:
+        with cls._session() as session:
+            if session.get(Module, module_id) is None:
+                raise NotFoundError("Module", module_id)
+            submodules = session.scalars(
+                select(Submodule).where(Submodule.module_id == module_id).order_by(Submodule.id)
+            )
+            return [SubmoduleResponse.model_validate(s) for s in submodules]
+
+    @classmethod
+    def get_submodule(cls, submodule_id: int) -> SubmoduleResponse:
+        with cls._session() as session:
+            submodule = session.get(Submodule, submodule_id)
+            if submodule is None:
+                raise NotFoundError("Submodule", submodule_id)
+            return SubmoduleResponse.model_validate(submodule)
+
+    @classmethod
+    def create_submodule(cls, data: SubmoduleCreate) -> SubmoduleResponse:
+        with cls._session() as session:
+            if session.get(Module, data.module_id) is None:
+                raise NotFoundError("Module", data.module_id)
+            submodule = Submodule(**data.model_dump())
+            session.add(submodule)
+            session.commit()
+            session.refresh(submodule)
+            return SubmoduleResponse.model_validate(submodule)
+
+    @classmethod
+    def update_submodule(cls, submodule_id: int, data: SubmoduleUpdate) -> SubmoduleResponse:
+        with cls._session() as session:
+            submodule = session.get(Submodule, submodule_id)
+            if submodule is None:
+                raise NotFoundError("Submodule", submodule_id)
+            changes = data.model_dump(exclude_unset=True)
+            current = SubmoduleResponse.model_validate(submodule).model_dump(exclude={"id"})
+            SubmoduleBase.model_validate({**current, **changes})
+            for field, value in changes.items():
+                setattr(submodule, field, value)
+            session.commit()
+            session.refresh(submodule)
+            return SubmoduleResponse.model_validate(submodule)
+
+    @classmethod
+    def delete_submodule(cls, submodule_id: int) -> None:
+        with cls._session() as session:
+            submodule = session.get(Submodule, submodule_id)
+            if submodule is None:
+                raise NotFoundError("Submodule", submodule_id)
+            session.delete(submodule)
+            session.commit()
