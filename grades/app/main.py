@@ -23,6 +23,11 @@ def handle_not_found(_: Request, error: Services.NotFoundError) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(error)})
 
 
+@app.exception_handler(Services.InvalidDataError)
+def handle_invalid_data(_: Request, error: Services.InvalidDataError) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": str(error)})
+
+
 @app.get("/health", tags=["health"])
 def health() -> dict[str, str]:
     return {"status": "ok"}

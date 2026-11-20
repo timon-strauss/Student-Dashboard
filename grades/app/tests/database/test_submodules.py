@@ -1,7 +1,6 @@
 import pytest
-from pydantic import ValidationError
 
-from app.Database import NotFoundError
+from app.Database import InvalidDataError, NotFoundError
 from app.Database.schemas import SubmoduleCreate, SubmoduleResponse, SubmoduleUpdate
 
 
@@ -56,6 +55,21 @@ def test_list_filters_by_module(make_year, make_module, make_submodule, db):
     assert db.list_submodules(module_a.id) == [a1, a2]
 
 
+def test_list_all_grouped_by_module(make_year, make_module, make_submodule, db):
+    year = make_year()
+    module_a = make_module(year.id)
+    module_b = make_module(year.id)
+    b1 = make_submodule(module_b.id)
+    a1 = make_submodule(module_a.id)
+    b2 = make_submodule(module_b.id)
+
+    assert db.list_all_submodules() == [a1, b1, b2]
+
+
+def test_list_all_empty(db):
+    assert db.list_all_submodules() == []
+
+
 def test_list_missing_module_raises(db):
     with pytest.raises(NotFoundError):
         db.list_submodules(42)
@@ -79,7 +93,7 @@ def test_update_clears_reached_points(module, make_submodule, db):
 def test_update_reached_above_stored_max_raises_and_keeps_values(module, make_submodule, db):
     submodule = make_submodule(module.id, max_points=20)
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(InvalidDataError, match="must not exceed"):
         db.update_submodule(submodule.id, SubmoduleUpdate(reached_points=25))
 
     assert db.get_submodule(submodule.id) == submodule
@@ -88,7 +102,7 @@ def test_update_reached_above_stored_max_raises_and_keeps_values(module, make_su
 def test_update_max_below_stored_reached_raises(module, make_submodule, db):
     submodule = make_submodule(module.id, max_points=20, reached_points=15)
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(InvalidDataError):
         db.update_submodule(submodule.id, SubmoduleUpdate(max_points=10))
 
     assert db.get_submodule(submodule.id) == submodule

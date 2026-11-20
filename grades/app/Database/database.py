@@ -102,6 +102,11 @@ class DatabaseAPI(ABC):
 
     @classmethod
     @abstractmethod
+    def list_all_submodules(cls) -> list[SubmoduleResponse]:
+        ...
+
+    @classmethod
+    @abstractmethod
     def get_submodule(cls, submodule_id: int) -> SubmoduleResponse:
         ...
 

@@ -33,7 +33,7 @@ class TestYearSchemas:
         assert YearUpdate().model_dump(exclude_unset=True) == {}
 
     def test_response_from_orm(self):
-        assert YearResponse.model_validate(Year(id=1, year="2025")) == YearResponse(id=1, year="2025")
+        assert YearResponse.model_validate(Year(id=1, year="2025", position=0)) == YearResponse(id=1, year="2025", position=0)
 
 
 class TestModuleSchemas:

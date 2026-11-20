@@ -19,11 +19,62 @@ def test_get_missing_raises(db):
     assert (exc.value.entity, exc.value.entity_id) == ("Year", 7)
 
 
-def test_list_ordered_by_year(make_year, db):
-    later = make_year(year="2026")
-    earlier = make_year(year="2025")
+def test_create_appends_position(make_year):
+    assert [make_year(year=str(n)).position for n in range(3)] == [0, 1, 2]
 
-    assert db.list_years() == [earlier, later]
+
+def test_list_ordered_by_position(make_year, db):
+    first = make_year(year="2026")
+    second = make_year(year="2025")
+
+    assert db.list_years() == [first, second]
+
+
+def _order(db):
+    return [(y.year, y.position) for y in db.list_years()]
+
+
+def test_reposition_forward(make_year, db):
+    a, b, c = (make_year(year=n) for n in "abc")
+
+    moved = db.reposition_year(a.id, 2)
+
+    assert moved.position == 2
+    assert _order(db) == [("b", 0), ("c", 1), ("a", 2)]
+
+
+def test_reposition_backward(make_year, db):
+    a, b, c = (make_year(year=n) for n in "abc")
+
+    db.reposition_year(c.id, 0)
+
+    assert _order(db) == [("c", 0), ("a", 1), ("b", 2)]
+
+
+def test_reposition_clamps_to_last(make_year, db):
+    a, b = (make_year(year=n) for n in "ab")
+
+    assert db.reposition_year(a.id, 99).position == 1
+    assert _order(db) == [("b", 0), ("a", 1)]
+
+
+def test_reposition_same_position(make_year, db):
+    a, b = (make_year(year=n) for n in "ab")
+
+    assert db.reposition_year(b.id, 1) == b
+
+
+def test_reposition_missing_raises(db):
+    with pytest.raises(NotFoundError):
+        db.reposition_year(1, 0)
+
+
+def test_delete_closes_position_gap(make_year, db):
+    a, b, c = (make_year(year=n) for n in "abc")
+
+    db.delete_year(b.id)
+
+    assert _order(db) == [("a", 0), ("c", 1)]
 
 
 def test_list_empty(db):

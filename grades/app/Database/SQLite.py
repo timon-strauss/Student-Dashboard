@@ -206,6 +206,12 @@ class SQLiteDatabase(DatabaseAPI):
             return [SubmoduleResponse.model_validate(s) for s in submodules]
 
     @classmethod
+    def list_all_submodules(cls) -> list[SubmoduleResponse]:
+        with cls._session() as session:
+            submodules = session.scalars(select(Submodule).order_by(Submodule.module_id, Submodule.id))
+            return [SubmoduleResponse.model_validate(s) for s in submodules]
+
+    @classmethod
     def get_submodule(cls, submodule_id: int) -> SubmoduleResponse:
         with cls._session() as session:
             submodule = session.get(Submodule, submodule_id)

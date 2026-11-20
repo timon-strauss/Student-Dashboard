@@ -52,6 +52,20 @@ def test_list_filters_by_year(make_year, make_module, db):
     assert db.list_modules(year_a.id) == [a1, a2]
 
 
+def test_list_all_ordered_by_year_position(make_year, make_module, db):
+    first = make_year(year="a")
+    second = make_year(year="b")
+    in_second = make_module(second.id)
+    in_first = make_module(first.id)
+    db.reposition_year(second.id, 0)
+
+    assert db.list_all_modules() == [in_second, in_first]
+
+
+def test_list_all_empty(db):
+    assert db.list_all_modules() == []
+
+
 def test_list_missing_year_raises(db):
     with pytest.raises(NotFoundError):
         db.list_modules(42)

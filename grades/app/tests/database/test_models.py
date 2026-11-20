@@ -21,6 +21,13 @@ def module(session):
     return module
 
 
+def test_year_position_constraint(session):
+    session.add(Year(year="2025", position=-1))
+
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
 def test_year_constraint_rejects_empty(session):
     session.add(Year(year=""))
 
