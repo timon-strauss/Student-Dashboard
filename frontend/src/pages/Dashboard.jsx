@@ -3,44 +3,58 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, loadExamsOverview, loadGradesOverview, loadLooseDecks, useLoad } from '../api.js'
 import Icon from '../components/Icon.jsx'
 import { ExamForm, DeckForm, ImportForm } from '../components/Forms.jsx'
-import { GradeFigure, GradeTiles } from '../components/Grades.jsx'
-import {
-  OverviewCard,
-  Loading,
-  LoadError,
-  byName,
-  daysUntil,
-  examLabel,
-  isFinished,
-  totalCards,
-} from '../components/Stats.jsx'
+import { GradeFigure, formatGrade } from '../components/Grades.jsx'
+import { OverviewCard, Loading, LoadError, byName, daysUntil, isFinished, totalCards } from '../components/Stats.jsx'
 
-function GradesSection() {
-  const { data, error, loading } = useLoad(loadGradesOverview, [])
+function GradesStrip() {
+  const { data, error } = useLoad(loadGradesOverview, [])
+  if (error || !data || data.progression.length === 0) return null
+  const { overall, progression } = data
 
   return (
     <section>
       <div className="section-head">
         <h2 className="section-title">Noten</h2>
-        <Link to="/grades" className="btn btn-small">Details <Icon name="next" size={16} /></Link>
+        <Link to="/grades" className="btn btn-ghost btn-small">Alle Noten <Icon name="next" size={16} /></Link>
       </div>
-      {error ? (
-        <p className="muted small">Noten konnten nicht geladen werden: {error.message}</p>
-      ) : loading && !data ? (
-        <p className="muted small">Lädt …</p>
-      ) : data.progression.length === 0 ? (
-        <div className="empty">
-          <p className="muted">Noch keine Noten erfasst.</p>
-          <Link to="/grades" className="btn btn-primary">Erstes Jahr anlegen</Link>
-        </div>
-      ) : (
-        <div className="panel panel-flush">
-          <div className="charts charts-grades">
-            <GradeTiles overall={data.overall} />
-            <GradeFigure progression={data.progression} />
+      <div className="panel gstrip">
+        <div className="gstrip-figures">
+          <div className="figure">
+            <b className="accent">{formatGrade(overall.grade)}</b>
+            <span>Durchschnitt</span>
+          </div>
+          <div className="figure">
+            <b>{overall.passed_ects}</b>
+            <span>ECTS</span>
+          </div>
+          <div className="figure">
+            <b>{overall.ects}</b>
+            <span>ECTS benotet</span>
           </div>
         </div>
-      )}
+        {progression.length > 1 && <GradeFigure progression={progression} />}
+      </div>
+    </section>
+  )
+}
+
+function Today({ due }) {
+  if (due === 0) {
+    return (
+      <section className="today is-done">
+        <span className="today-check"><Icon name="check" size={20} /></span>
+        <h1>Alles gelernt für heute</h1>
+      </section>
+    )
+  }
+  return (
+    <section className="today">
+      <h1>
+        <b>{due}</b> {due === 1 ? 'Karte' : 'Karten'} fällig
+      </h1>
+      <Link to="/study/all" className="btn btn-primary btn-large">
+        Lernen <Icon name="next" />
+      </Link>
     </section>
   )
 }
@@ -72,54 +86,57 @@ export default function Dashboard() {
       title={exam.name}
       description={exam.description}
       stats={exam.stats}
-      meta={`${exam.deckCount} ${exam.deckCount === 1 ? 'Deck' : 'Decks'} · ${examLabel(days(exam))}`}
+      days={days(exam)}
     />
   )
 
   const onImported = ({ type, created }) => navigate(type === 'exam' ? `/exams/${created.id}` : `/decks/${created.id}`)
 
+  const addButtons = (
+    <div className="row">
+      <button className="icon-btn" data-tip="Importieren" aria-label="Importieren" onClick={() => setDialog('import')}>
+        <Icon name="upload" />
+      </button>
+      <button className="btn btn-small" onClick={() => setDialog('deck')}><Icon name="plus" size={16} /> Deck</button>
+      <button className="btn btn-small" onClick={() => setDialog('exam')}><Icon name="plus" size={16} /> Klausur</button>
+    </div>
+  )
+
   return (
     <>
-      <GradesSection />
+      <GradesStrip />
 
-      <section className="hero">
-        <p className="eyebrow">Heute</p>
-        <h1>
-          {total === 0
-            ? 'Willkommen. Leg los mit deinem ersten Deck.'
-            : due > 0
-              ? <>{due} {due === 1 ? 'Karte wartet' : 'Karten warten'} auf dich.</>
-              : 'Alles erledigt. Nichts ist fällig.'}
-        </h1>
-        <div className="row">
-          {due > 0 && (
-            <Link to="/study/all" className="btn btn-primary btn-large">Jetzt lernen</Link>
-          )}
-          <button className="btn" onClick={() => setDialog('exam')}><Icon name="plus" /> Klausur</button>
-          <button className="btn" onClick={() => setDialog('deck')}><Icon name="plus" /> Deck</button>
-          <button className="btn btn-ghost" onClick={() => setDialog('import')}><Icon name="upload" /> Importieren</button>
-        </div>
-      </section>
-
-      {isEmpty && (
-        <div className="empty">
-          <h3>Noch nichts hier</h3>
-          <p className="muted">
-            Eine Klausur bündelt die Decks, die du dafür lernst. Decks können aber auch für sich allein stehen.
-          </p>
-        </div>
+      {isEmpty ? (
+        <section className="empty empty-start">
+          <h1>Was steht an?</h1>
+          <p className="muted">Leg eine Klausur an und sammle darin deine Decks.</p>
+          <div className="row center">
+            <button className="btn btn-primary" onClick={() => setDialog('exam')}><Icon name="plus" /> Klausur</button>
+            <button className="btn" onClick={() => setDialog('deck')}><Icon name="plus" /> Deck</button>
+            <button className="btn btn-ghost" onClick={() => setDialog('import')}><Icon name="upload" /> Importieren</button>
+          </div>
+        </section>
+      ) : (
+        total > 0 && <Today due={due} />
       )}
 
-      {upcoming.length > 0 && (
+      {!isEmpty && (
         <section>
-          <h2 className="section-title">Klausuren</h2>
-          <div className="grid">{upcoming.map(examCard)}</div>
+          <div className="section-head">
+            <h2 className="section-title">Klausuren</h2>
+            {addButtons}
+          </div>
+          {upcoming.length > 0 ? (
+            <div className="grid">{upcoming.map(examCard)}</div>
+          ) : (
+            <p className="muted small">Keine anstehenden Klausuren.</p>
+          )}
         </section>
       )}
 
       {looseDecks.length > 0 && (
         <section>
-          <h2 className="section-title">Decks ohne Klausur</h2>
+          <h2 className="section-title">Einzelne Decks</h2>
           <div className="grid">
             {looseDecks.map((d) => (
               <OverviewCard key={d.id} to={`/decks/${d.id}`} title={d.name} description={d.description} stats={d.stats} />
@@ -131,7 +148,7 @@ export default function Dashboard() {
       {finished.length > 0 && (
         <details className="fold">
           <summary>
-            <Icon name="next" size={16} /> Abgeschlossen <span className="pill">{finished.length}</span>
+            <Icon name="next" size={16} /> Vergangene Klausuren <span className="pill">{finished.length}</span>
           </summary>
           <div className="grid">{finished.map(examCard)}</div>
         </details>

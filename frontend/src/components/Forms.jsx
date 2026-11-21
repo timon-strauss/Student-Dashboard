@@ -13,6 +13,8 @@ function Actions({ busy, onClose, label = 'Speichern', children }) {
   )
 }
 
+const SAVE_NEXT_KEY = /Mac|iP/.test(navigator.platform) ? '⌘↵' : 'Strg ↵'
+
 const pad = (n) => String(n).padStart(2, '0')
 
 function localParts(iso) {
@@ -58,7 +60,7 @@ export function ExamForm({ exam, onSaved, onClose }) {
         </label>
         <div className="field-row">
           <label className="field">
-            <span>Klausurtermin</span>
+            <span>Datum</span>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </label>
           <label className="field">
@@ -207,7 +209,7 @@ function ImageField({ value, onChange }) {
         {src ? (
           <>
             <img src={src} alt="" />
-            <span className="dropzone-text">Klicken oder Bild hierher ziehen, um es zu ersetzen</span>
+            <span className="dropzone-text">Ersetzen</span>
             <button
               type="button"
               className="dropzone-remove"
@@ -224,7 +226,7 @@ function ImageField({ value, onChange }) {
         ) : (
           <>
             <Icon name="image" size={20} />
-            <span className="dropzone-text">Bild hierher ziehen oder klicken</span>
+            <span className="dropzone-text">Bild <em>optional</em></span>
           </>
         )}
       </Dropzone>
@@ -299,12 +301,12 @@ export function CardForm({ card, deckId, onSaved, onClose }) {
         </div>
         {error && <p className="error">{error}</p>}
         {added > 0 && !error && (
-          <p className="muted small">{added} {added === 1 ? 'Karte' : 'Karten'} hinzugefügt.</p>
+          <p className="saved-hint"><Icon name="check" size={16} /> {added} {added === 1 ? 'Karte' : 'Karten'} gespeichert</p>
         )}
         <Actions busy={busy || !valid} onClose={onClose}>
           {!card && (
-            <button type="button" className="btn" disabled={busy || !valid} onClick={() => save(true)} title="⌘/Strg + Enter">
-              Speichern &amp; nächste
+            <button type="button" className="btn" disabled={busy || !valid} onClick={() => save(true)}>
+              Speichern &amp; weiter <kbd>{SAVE_NEXT_KEY}</kbd>
             </button>
           )}
         </Actions>
@@ -347,12 +349,7 @@ export function ImportForm({ exams, defaultExamId = null, onImported, onClose })
   return (
     <Modal title="Importieren" onClose={onClose}>
       <form onSubmit={submit}>
-        <p className="muted">
-          Wähle eine zuvor exportierte JSON-Datei. Klausur-Exporte legen eine neue Klausur mit allen Decks an,
-          Deck-Exporte ein einzelnes Deck.
-        </p>
         <div className="field">
-          <span>Datei</span>
           <Dropzone
             accept=".json,application/json"
             matches={isJson}
@@ -362,18 +359,14 @@ export function ImportForm({ exams, defaultExamId = null, onImported, onClose })
           >
             <Icon name="upload" size={22} />
             {file ? (
-              <span className="dropzone-text">
-                <strong>{file.name}</strong>
-                <br />
-                Klicken oder andere Datei hierher ziehen, um sie zu ersetzen
-              </span>
+              <span className="dropzone-text"><strong>{file.name}</strong></span>
             ) : (
-              <span className="dropzone-text">JSON-Datei hierher ziehen oder klicken</span>
+              <span className="dropzone-text">Export-Datei (.json) ablegen oder <strong>auswählen</strong></span>
             )}
           </Dropzone>
         </div>
         <label className="field">
-          <span>Deck einer Klausur zuordnen <em>nur für Deck-Exporte</em></span>
+          <span>Klausur <em>nur für einzelne Decks</em></span>
           <ExamSelect exams={exams} value={examId} onChange={setExamId} />
         </label>
         {error && <p className="error">{error}</p>}

@@ -26,7 +26,6 @@ function GradeChart({ progression }) {
     .filter((p) => p.grade !== null)
   const line = points.map((p, k) => `${k ? 'L' : 'M'}${x(p.i)} ${y(p.grade)}`).join(' ')
   const current = points.length ? points[points.length - 1].grade : null
-  const latest = progression[n - 1]
   const entry = active !== null ? progression[active] : null
   const edge = active !== null && (x(active) < 20 ? 'start' : x(active) > 80 ? 'end' : 'mid')
 
@@ -48,9 +47,6 @@ function GradeChart({ progression }) {
 
   return (
     <div className="rchart">
-      <p className="rchart-head">
-        <b>{formatGrade(current)}</b> Durchschnitt · {ectsLabel(latest.cumulative_ects)}
-      </p>
       <div
         className="rchart-plot gchart-plot"
         tabIndex={0}
@@ -87,10 +83,10 @@ function GradeChart({ progression }) {
           <div className={`tip tip-${edge}`} style={{ left: `${x(active)}%` }}>
             <span className="tip-title">{entry.year}</span>
             <span className="tip-row">
-              Jahr <b>{formatGrade(entry.grade)}</b> · {ectsLabel(entry.ects)}
+              Jahr <b>{formatGrade(entry.grade)}</b>
             </span>
             <span className="tip-row">
-              Gesamt <b>{formatGrade(entry.cumulative_grade)}</b> · {ectsLabel(entry.cumulative_ects)}
+              Gesamt <b>{formatGrade(entry.cumulative_grade)}</b>
             </span>
           </div>
         )}
@@ -116,28 +112,9 @@ export function GradeFigure({ progression }) {
       {hasGrades ? (
         <GradeChart progression={progression} />
       ) : (
-        <p className="muted small">Sobald ein Modul bestanden und benotet ist, siehst du hier deinen Verlauf.</p>
+        <p className="muted small">Noch keine Noten.</p>
       )}
     </figure>
-  )
-}
-
-export function GradeTiles({ overall }) {
-  return (
-    <div className="tiles">
-      <div className="tile">
-        <span className={`tile-value${overall.grade !== null ? ' accent' : ''}`}>{formatGrade(overall.grade)}</span>
-        <span className="tile-label">Aktueller Durchschnitt</span>
-      </div>
-      <div className="tile">
-        <span className="tile-value">{overall.passed_ects}</span>
-        <span className="tile-label">ECTS gesamt</span>
-      </div>
-      <div className="tile">
-        <span className="tile-value">{overall.ects}</span>
-        <span className="tile-label">ECTS benotet</span>
-      </div>
-    </div>
   )
 }
 
@@ -168,7 +145,7 @@ export function YearForm({ year, onSaved, onClose }) {
     <Modal title={year ? 'Jahr bearbeiten' : 'Neues Jahr'} onClose={onClose}>
       <form onSubmit={submit}>
         <label className="field">
-          <span>Bezeichnung</span>
+          <span>Name</span>
           <input value={label} onChange={(e) => setLabel(e.target.value)} required autoFocus placeholder="z. B. 2025/26" />
         </label>
         {error && <p className="error">{error}</p>}
@@ -222,11 +199,11 @@ export function ModuleForm({ module, years, yearId, onSaved, onClose }) {
           </label>
         </div>
         {fromSubmodules ? (
-          <p className="field-hint">Die Note wird aus den Teilleistungen berechnet.</p>
+          <p className="field-hint">Note aus Teilleistungen</p>
         ) : (
           <>
             <label className="field">
-              <span>Note <em>optional, 1,0 bis 6,0</em></span>
+              <span>Note <em>optional</em></span>
               <input
                 type="number"
                 min="1"
@@ -234,7 +211,7 @@ export function ModuleForm({ module, years, yearId, onSaved, onClose }) {
                 step="0.1"
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
-                placeholder="leer lassen bei Teilleistungen oder unbenotet"
+                placeholder="1,0 – 6,0"
               />
             </label>
             <label className={`check${hasGrade ? ' is-disabled' : ''}`}>
@@ -244,7 +221,7 @@ export function ModuleForm({ module, years, yearId, onSaved, onClose }) {
                 disabled={hasGrade}
                 onChange={(e) => setPassed(e.target.checked)}
               />
-              <span>Bestanden ohne Note <em>nur für unbenotete Module</em></span>
+              <span>Unbenotet bestanden</span>
             </label>
           </>
         )}
@@ -286,7 +263,7 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
         </label>
         <div className="field-row">
           <label className="field">
-            <span>Erreichte Punkte <em>optional</em></span>
+            <span>Erreicht <em>optional</em></span>
             <input
               type="number"
               min="0"
@@ -297,7 +274,7 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
             />
           </label>
           <label className="field">
-            <span>Max. Punkte</span>
+            <span>Maximal</span>
             <input
               type="number"
               min="0.5"
@@ -314,10 +291,6 @@ export function SubmoduleForm({ submodule, moduleId, maxPoints, onSaved, onClose
             </datalist>
           </label>
         </div>
-        <p className="field-hint">
-          Die Modulnote ergibt sich aus der Summe aller Punkte und der Notentabelle für die Summe der Max.-Punkte
-          ({maxPoints.join(', ')}).
-        </p>
         {error && <p className="error">{error}</p>}
         <Actions busy={busy || !name.trim() || !max} onClose={onClose} />
       </form>

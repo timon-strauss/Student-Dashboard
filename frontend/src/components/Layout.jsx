@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import Icon from './Icon.jsx'
 
 export function Logo() {
@@ -52,18 +52,80 @@ export function Breadcrumbs({ items }) {
   )
 }
 
+export function Menu({ label = 'Weitere Aktionen', items }) {
+  const [open, setOpen] = useState(false)
+  const root = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e) => !root.current?.contains(e.target) && setOpen(false)
+    const onKey = (e) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div className="menu" ref={root}>
+      <button
+        className="icon-btn"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Icon name="more" />
+      </button>
+      {open && (
+        <div className="menu-list" role="menu">
+          {items.filter(Boolean).map((item) => (
+            <button
+              key={item.label}
+              role="menuitem"
+              className={item.danger ? 'is-danger' : ''}
+              onClick={() => {
+                setOpen(false)
+                item.onClick()
+              }}
+            >
+              <Icon name={item.icon} size={16} />
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function Notice({ text, onClose }) {
+  if (!text) return null
+  return (
+    <div className="notice" role="status">
+      <span>{text}</span>
+      <button className="icon-btn icon-btn-small" aria-label="Schließen" onClick={onClose}>
+        <Icon name="close" size={16} />
+      </button>
+    </div>
+  )
+}
+
 export default function Layout() {
+  const grades = useLocation().pathname.startsWith('/grades')
   return (
     <>
       <header className="topbar">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand" aria-label="Startseite">
           <Logo />
-          <span>Dashboard</span>
         </Link>
-        <nav className="topnav">
-          <NavLink to="/grades" className="btn btn-ghost btn-small">Noten</NavLink>
-          <ThemeToggle />
+        <nav className="tabs" aria-label="Bereiche">
+          <Link to="/" className={grades ? 'tab' : 'tab active'} aria-current={grades ? undefined : 'page'}>Lernen</Link>
+          <Link to="/grades" className={grades ? 'tab active' : 'tab'} aria-current={grades ? 'page' : undefined}>Noten</Link>
         </nav>
+        <ThemeToggle />
       </header>
       <main className="page">
         <Outlet />

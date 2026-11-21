@@ -109,7 +109,7 @@ function StatePie({ stats }) {
 
 const dayFormat = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
 const axisFormat = new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'short' })
-const examFormat = new Intl.DateTimeFormat('de-DE', { dateStyle: 'long', timeStyle: 'short' })
+const examFormat = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 const localDate = (iso) => new Date(`${iso}T00:00`)
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -119,7 +119,7 @@ const startOfDay = (value) => {
   return day
 }
 
-export const formatExamDate = (iso) => `${examFormat.format(new Date(iso))} Uhr`
+export const formatExamDate = (iso) => examFormat.format(new Date(iso))
 
 export function daysUntil(iso) {
   return Math.round((startOfDay(iso) - startOfDay(Date.now())) / DAY_MS)
@@ -128,10 +128,10 @@ export function daysUntil(iso) {
 export const isFinished = (exam) => daysUntil(exam.exam_date) < 0
 
 export function examLabel(days) {
-  if (days < 0) return 'Klausur vorbei'
-  if (days === 0) return 'Klausur heute'
-  if (days === 1) return 'Klausur morgen'
-  return `Klausur in ${days} Tagen`
+  if (days < 0) return 'Vorbei'
+  if (days === 0) return 'Heute'
+  if (days === 1) return 'Morgen'
+  return `In ${days} Tagen`
 }
 
 function ProgressChart({ history, total }) {
@@ -170,7 +170,7 @@ function ProgressChart({ history, total }) {
   return (
     <div className="rchart">
       <p className="rchart-head">
-        <b>{today.consolidated}</b> von {cardCount(total)} gefestigt
+        <b>{today.consolidated}</b> von {total} gefestigt
       </p>
       <div
         className="rchart-plot pchart-plot"
@@ -210,7 +210,7 @@ function ProgressChart({ history, total }) {
         {hasExam && todayX > 18 && todayX < 78 && (
           <span className="pchart-axis-today" style={{ left: `${todayX}%` }}>Heute</span>
         )}
-        <span>Klausur · {axisFormat.format(localDate(examDay))}</span>
+        <span>{axisFormat.format(localDate(examDay))}</span>
       </div>
     </div>
   )
@@ -219,11 +219,11 @@ function ProgressChart({ history, total }) {
 export function ProgressFigure({ history, stats }) {
   return (
     <figure className="chart">
-      <figcaption>Fortschritt bis zur Klausur</figcaption>
+      <figcaption>Verlauf</figcaption>
       {history.length > 0 ? (
         <ProgressChart history={history} total={totalCards(stats)} />
       ) : (
-        <p className="muted small">Sobald es Karten gibt, siehst du hier, wie viele davon gefestigt sind.</p>
+        <p className="muted small">Noch keine Karten.</p>
       )}
     </figure>
   )
@@ -263,8 +263,7 @@ function ForecastChart({ forecast }) {
   return (
     <div className="rchart">
       <p className="rchart-head">
-        <b>{total}</b> {total === 1 ? 'Karte wird' : 'Karten werden'} fällig
-        {total > 0 && <span> · davon {forecast[0].count} heute</span>}
+        <b>{total}</b> fällig{total > 0 && <>, {forecast[0].count} heute</>}
       </p>
       <div
         className="rchart-plot fchart-plot"
@@ -304,53 +303,64 @@ function ForecastChart({ forecast }) {
 export function ForecastFigure({ cards }) {
   return (
     <figure className="chart">
-      <figcaption>Fälligkeiten · nächste {FORECAST_DAYS} Tage</figcaption>
+      <figcaption>Nächste {FORECAST_DAYS} Tage</figcaption>
       <ForecastChart forecast={dueForecast(cards)} />
     </figure>
   )
 }
 
-export function StatsPanel({ stats, extraTile, chart, children }) {
+export function StatsPanel({ stats, chart }) {
   return (
-    <section className="panel">
-      <div className="tiles">
-        <div className="tile">
-          <span className="tile-value accent">{stats.due}</span>
-          <span className="tile-label">Jetzt fällig</span>
-        </div>
-        <div className="tile">
-          <span className="tile-value">{totalCards(stats)}</span>
-          <span className="tile-label">Karten</span>
-        </div>
-        {extraTile}
-      </div>
-
-      <div className="charts">
-        <figure className="chart">
-          <figcaption>Vorbereitung</figcaption>
-          <StatePie stats={stats} />
-        </figure>
-        {chart}
-      </div>
-
-      {children && <div className="row">{children}</div>}
+    <section className="panel charts">
+      <figure className="chart">
+        <figcaption>Stand</figcaption>
+        <StatePie stats={stats} />
+      </figure>
+      {chart}
     </section>
   )
 }
 
-export function OverviewCard({ to, title, description, stats, meta }) {
+function StateBar({ stats }) {
+  const total = totalCards(stats)
+  return (
+    <div className="statebar" aria-hidden="true">
+      {total > 0 &&
+        GROUPS.map((s) =>
+          stats[s.key] > 0 ? <i key={s.key} style={{ flexGrow: stats[s.key], background: s.color }} /> : null,
+        )}
+    </div>
+  )
+}
+
+export function Countdown({ days }) {
+  if (days < 0) return null
+  if (days <= 1) return <span className="countdown is-now">{days === 0 ? 'Heute' : 'Morgen'}</span>
+  return (
+    <span className={`countdown${days <= 7 ? ' is-soon' : ''}`} aria-label={`in ${days} Tagen`}>
+      <b>{days}</b>Tage
+    </span>
+  )
+}
+
+export function OverviewCard({ to, title, description, stats, days }) {
+  const total = totalCards(stats)
   return (
     <Link to={to} className="ocard">
       <div className="ocard-head">
         <h3>{title}</h3>
-        {stats.due > 0 && <span className="pill pill-accent">{stats.due} fällig</span>}
+        {days !== undefined && <Countdown days={days} />}
       </div>
       {description && <p className="ocard-desc"><RichText text={description} /></p>}
       <div className="ocard-foot">
-        <Pie stats={stats} size={44} thickness={7} />
+        <StateBar stats={stats} />
         <div className="ocard-meta">
-          <span>{cardCount(totalCards(stats))} · {consolidatedPercent(stats)} % gefestigt</span>
-          {meta && <span>{meta}</span>}
+          <span>{cardCount(total)}</span>
+          {stats.due > 0 ? (
+            <span className="ocard-due">{stats.due} fällig</span>
+          ) : (
+            total > 0 && <span>{consolidatedPercent(stats)} % gefestigt</span>
+          )}
         </div>
       </div>
     </Link>
@@ -358,13 +368,13 @@ export function OverviewCard({ to, title, description, stats, meta }) {
 }
 
 export function Loading() {
-  return <p className="muted center pad">Lädt …</p>
+  return <p className="loading muted center pad">Lädt …</p>
 }
 
 export function LoadError({ error }) {
   return (
     <div className="empty">
-      <h3>Das hat nicht geklappt</h3>
+      <h3>Laden fehlgeschlagen</h3>
       <p className="muted">{error.message}</p>
       <Link to="/" className="btn">Zur Übersicht</Link>
     </div>
@@ -375,7 +385,6 @@ export function NotFound() {
   return (
     <div className="empty">
       <h3>Seite nicht gefunden</h3>
-      <p className="muted">Unter dieser Adresse gibt es nichts.</p>
       <Link to="/" className="btn">Zur Übersicht</Link>
     </div>
   )

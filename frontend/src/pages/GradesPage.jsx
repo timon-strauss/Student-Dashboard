@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { gradesApi, loadGradesTree, useLoad } from '../api.js'
 import Icon from '../components/Icon.jsx'
-import { Breadcrumbs } from '../components/Layout.jsx'
+import { Notice } from '../components/Layout.jsx'
 import { ConfirmDialog } from '../components/Modal.jsx'
 import {
   ModuleForm,
@@ -18,7 +18,7 @@ const LEVELS = ['year', 'module', 'submodule']
 
 function Grade({ value, level, passedWithoutGrade }) {
   if (value === null && passedWithoutGrade) {
-    return <span className={`tgrade tgrade-${level} tgrade-pass`}>bestanden</span>
+    return <span className={`tgrade tgrade-${level} tgrade-pass`}>Bestanden</span>
   }
   return (
     <span className={`tgrade tgrade-${level}${isFailing(value) ? ' tgrade-fail' : ''}${value === null ? ' tgrade-none' : ''}`}>
@@ -107,63 +107,61 @@ export default function GradesPage() {
 
   return (
     <>
-      <Breadcrumbs items={[{ label: 'Übersicht', to: '/' }, { label: 'Noten' }]} />
-
       <header className="page-head">
-        <div>
-          <p className="eyebrow">Noten</p>
-          <h1>Notenübersicht</h1>
-          <p className="lead">
-            Durchschnitt {formatGrade(overall.grade)} · {ectsLabel(overall.ects)} benotet
-          </p>
+        <div className="page-title">
+          <h1>Noten</h1>
         </div>
-        <div className="row">
-          {tree.length > 0 && (
-            <button className="btn btn-ghost" onClick={toggleAll}>
-              {allModulesOpen ? 'Alle einklappen' : 'Alle ausklappen'}
-            </button>
-          )}
-          <button className="btn" onClick={() => setDialog({ type: 'year' })}>
-            <Icon name="plus" /> Jahr
-          </button>
-        </div>
+        {overall.grade !== null && (
+          <div className="figures">
+            <div className="figure">
+              <b className="accent">{formatGrade(overall.grade)}</b>
+              <span>Durchschnitt</span>
+            </div>
+            <div className="figure">
+              <b>{overall.passed_ects}</b>
+              <span>ECTS</span>
+            </div>
+          </div>
+        )}
       </header>
 
-      {notice && <p className="notice" onClick={() => setNotice(null)}>{notice}</p>}
+      <Notice text={notice} onClose={() => setNotice(null)} />
 
       {tree.length === 0 ? (
         <div className="empty">
-          <h3>Noch keine Jahre</h3>
-          <p className="muted">
-            Ein Jahr fasst zwei Semester zusammen. Darin legst du Module an, die du direkt benotest oder über Teilleistungen berechnen lässt.
-          </p>
-          <button className="btn btn-primary" onClick={() => setDialog({ type: 'year' })}>Erstes Jahr anlegen</button>
+          <p className="muted">Leg ein Jahr an und trag darin deine Module ein.</p>
+          <button className="btn btn-primary" onClick={() => setDialog({ type: 'year' })}><Icon name="plus" /> Erstes Jahr</button>
         </div>
       ) : (
-        <section className="tree" aria-label="Jahre, Module und Teilleistungen">
-          <div className="tree-head">
-            <span>Jahr · Modul · Teilleistung</span>
-            <span>Note</span>
+        <>
+          <div className="toolbar">
+            <button className="btn btn-ghost btn-small" onClick={toggleAll}>
+              {allModulesOpen ? 'Alle einklappen' : 'Alle ausklappen'}
+            </button>
+            <button className="btn btn-small" onClick={() => setDialog({ type: 'year' })}>
+              <Icon name="plus" size={16} /> Jahr
+            </button>
           </div>
-          {tree.map((year, index) => {
-            const yearOpen = !closedYears.has(year.id)
-            return (
-              <div key={year.id} className="tnode" role="group">
-                <Row
-                  level="year"
-                  open={yearOpen}
-                  onToggle={() => toggle(setClosedYears, year.id)}
-                  title={year.year}
-                  meta={`${year.modules.length} ${year.modules.length === 1 ? 'Modul' : 'Module'} · ${ectsLabel(year.ects)} benotet`}
-                  grade={<Grade value={year.grade} level="year" />}
-                  actions={
-                    <>
-                      <ActionButton icon="up" label="Nach oben" disabled={index === 0} onClick={() => move(year, index - 1)} />
-                      <ActionButton icon="down" label="Nach unten" disabled={index === tree.length - 1} onClick={() => move(year, index + 1)} />
-                      <ActionButton icon="plus" label="Modul anlegen" onClick={() => setDialog({ type: 'module', yearId: year.id })} />
-                      <ActionButton icon="edit" label="Bearbeiten" onClick={() => setDialog({ type: 'year', year })} />
-                      <ActionButton icon="trash" label="Löschen" danger align="end" onClick={() => setDialog({ type: 'delete-year', year })} />
-                    </>
+          <section className="tree" aria-label="Jahre, Module und Teilleistungen">
+            {tree.map((year, index) => {
+              const yearOpen = !closedYears.has(year.id)
+              return (
+                <div key={year.id} className="tnode" role="group">
+                  <Row
+                    level="year"
+                    open={yearOpen}
+                    onToggle={() => toggle(setClosedYears, year.id)}
+                    title={year.year}
+                    meta={ectsLabel(year.modules.reduce((sum, m) => sum + m.ects, 0))}
+                    grade={<Grade value={year.grade} level="year" />}
+                    actions={
+                      <>
+                        <ActionButton icon="up" label="Nach oben" disabled={index === 0} onClick={() => move(year, index - 1)} />
+                        <ActionButton icon="down" label="Nach unten" disabled={index === tree.length - 1} onClick={() => move(year, index + 1)} />
+                        <ActionButton icon="plus" label="Modul anlegen" onClick={() => setDialog({ type: 'module', yearId: year.id })} />
+                        <ActionButton icon="edit" label="Bearbeiten" onClick={() => setDialog({ type: 'year', year })} />
+                        <ActionButton icon="trash" label="Löschen" danger align="end" onClick={() => setDialog({ type: 'delete-year', year })} />
+                  </>
                   }
                 />
                 {yearOpen && year.modules.length === 0 && (
@@ -182,13 +180,18 @@ export default function GradesPage() {
                           title={module.name}
                           meta={
                             <>
-                              {ectsLabel(module.ects)}
-                              {hasSubmodules && ` · ${module.submodules.length} ${module.submodules.length === 1 ? 'Teilleistung' : 'Teilleistungen'}`}
-                              {hasSubmodules && ` · ${formatPoints(module.reached_points)} / ${formatPoints(module.max_points)} Punkte`}
+                              <span>{ectsLabel(module.ects)}</span>
+                              {hasSubmodules && (
+                                <span>{formatPoints(module.reached_points)} / {formatPoints(module.max_points)} P.</span>
+                              )}
                               {hasSubmodules && module.grade === null && (
-                                module.submodules.some((s) => s.reached_points === null)
-                                  ? ' · Punkte fehlen noch'
-                                  : !maxPoints.includes(module.max_points) && ` · keine Notentabelle für ${formatPoints(module.max_points)} Punkte`
+                                module.submodules.some((s) => s.reached_points === null) ? (
+                                  <span className="flag">Punkte fehlen</span>
+                                ) : (
+                                  !maxPoints.includes(module.max_points) && (
+                                    <span className="flag" data-tip={`Notentabellen: ${maxPoints.join(', ')} P.`}>Keine Notentabelle</span>
+                                  )
+                                )
                               )}
                             </>
                           }
@@ -213,7 +216,7 @@ export default function GradesPage() {
                               key={submodule.id}
                               level="submodule"
                               title={submodule.name}
-                              meta={`${submodule.reached_points === null ? '–' : formatPoints(submodule.reached_points)} / ${formatPoints(submodule.max_points)} Punkte`}
+                              meta={`${submodule.reached_points === null ? '–' : formatPoints(submodule.reached_points)} / ${formatPoints(submodule.max_points)} P.`}
                               grade={<span />}
                               actions={
                                 <>
@@ -240,6 +243,7 @@ export default function GradesPage() {
             )
           })}
         </section>
+        </>
       )}
 
       {dialog?.type === 'year' && <YearForm year={dialog.year} onClose={close} onSaved={saved} />}
