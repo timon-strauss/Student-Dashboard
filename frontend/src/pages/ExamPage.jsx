@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, downloadJson, loadExamDecks, useLoad } from '../api.js'
 import Icon from '../components/Icon.jsx'
-import { Breadcrumbs } from '../components/Layout.jsx'
+import { Breadcrumbs, Menu, Notice } from '../components/Layout.jsx'
 import { ConfirmDialog } from '../components/Modal.jsx'
 import { ExamForm, DeckForm, ImportForm } from '../components/Forms.jsx'
 import RichText from '../components/RichText.jsx'
@@ -57,54 +57,49 @@ export default function ExamPage() {
 
   return (
     <>
-      <Breadcrumbs items={[{ label: 'Übersicht', to: '/' }, { label: exam.name }]} />
+      <Breadcrumbs items={[{ label: 'Lernen', to: '/' }, { label: exam.name }]} />
 
       <header className="page-head">
-        <div>
-          <p className="eyebrow">{examLabel(days)}</p>
+        <div className="page-title">
           <h1>{exam.name}</h1>
-          <p className="lead">{formatExamDate(exam.exam_date)}</p>
+          <p className="page-meta">
+            <span className={`chip${days >= 0 && days <= 7 ? ' chip-soon' : ''}`}>{examLabel(days)}</span>
+            <span>{formatExamDate(exam.exam_date)}</span>
+          </p>
           {exam.description && <p className="lead"><RichText text={exam.description} /></p>}
         </div>
-        <div className="row">
-          <button className="icon-btn" data-tip="Klausur bearbeiten" aria-label="Klausur bearbeiten" onClick={() => setDialog('edit')}><Icon name="edit" /></button>
-          <button className="icon-btn" data-tip="Klausur exportieren" aria-label="Klausur exportieren" onClick={exportExam}><Icon name="download" /></button>
-          <button className="icon-btn" data-tip="Deck importieren" aria-label="Deck importieren" onClick={() => setDialog('import')}><Icon name="upload" /></button>
-          <button className="icon-btn danger" data-tip="Klausur löschen" data-tip-align="end" aria-label="Klausur löschen" onClick={() => setDialog('delete')}><Icon name="trash" /></button>
+        <div className="page-actions">
+          {total > 0 && (
+            <Link to={`/study/exam/${id}?mode=all`} className="btn" data-tip="Ohne Bewertung durchgehen">Üben</Link>
+          )}
+          {stats.due > 0 && (
+            <Link to={`/study/exam/${id}`} className="btn btn-primary">Lernen <span className="btn-count">{stats.due}</span></Link>
+          )}
+          <Menu
+            items={[
+              { label: 'Bearbeiten', icon: 'edit', onClick: () => setDialog('edit') },
+              { label: 'Deck importieren', icon: 'upload', onClick: () => setDialog('import') },
+              { label: 'Exportieren', icon: 'download', onClick: exportExam },
+              { label: 'Löschen', icon: 'trash', danger: true, onClick: () => setDialog('delete') },
+            ]}
+          />
         </div>
       </header>
 
-      {notice && <p className="notice" onClick={() => setNotice(null)}>{notice}</p>}
+      <Notice text={notice} onClose={() => setNotice(null)} />
 
-      <StatsPanel
-        stats={stats}
-        chart={<ProgressFigure history={history} stats={stats} />}
-        extraTile={
-          <div className="tile">
-            <span className="tile-value">{Math.max(days, 0)}</span>
-            <span className="tile-label">{days === 1 ? 'Tag' : 'Tage'} bis zur Klausur</span>
-          </div>
-        }
-      >
-        {stats.due > 0 ? (
-          <Link to={`/study/exam/${id}`} className="btn btn-primary">Fällige lernen</Link>
-        ) : (
-          <span className="muted">Nichts fällig.</span>
-        )}
-        {total > 0 && (
-          <Link to={`/study/exam/${id}?mode=all`} className="btn" title="Alle Karten ohne Bewertung durchgehen">Freies Üben</Link>
-        )}
-      </StatsPanel>
+      {total > 0 && <StatsPanel stats={stats} chart={<ProgressFigure history={history} stats={stats} />} />}
 
       <section>
         <div className="section-head">
           <h2 className="section-title">Decks</h2>
-          <button className="btn btn-small" onClick={() => setDialog('deck')}><Icon name="plus" size={16} /> Deck</button>
+          {decks.length > 0 && (
+            <button className="btn btn-small" onClick={() => setDialog('deck')}><Icon name="plus" size={16} /> Deck</button>
+          )}
         </div>
         {decks.length === 0 ? (
           <div className="empty">
-            <p className="muted">Diese Klausur hat noch keine Decks.</p>
-            <button className="btn btn-primary" onClick={() => setDialog('deck')}>Erstes Deck anlegen</button>
+            <button className="btn btn-primary" onClick={() => setDialog('deck')}><Icon name="plus" /> Erstes Deck</button>
           </div>
         ) : (
           <div className="grid">

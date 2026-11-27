@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import ExamPage from './pages/ExamPage.jsx'
 import DeckPage from './pages/DeckPage.jsx'
 import StudyPage from './pages/StudyPage.jsx'
+import GradesPage from './pages/GradesPage.jsx'
 import { NotFound } from './components/Stats.jsx'
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/exams/:examId" element={<ExamPage />} />
         <Route path="/decks/:deckId" element={<DeckPage />} />
+        <Route path="/grades" element={<GradesPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/study/:scope/:id?" element={<StudyPage />} />

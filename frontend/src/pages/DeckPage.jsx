@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, downloadJson, imageUrl, useLoad } from '../api.js'
 import Icon from '../components/Icon.jsx'
-import { Breadcrumbs } from '../components/Layout.jsx'
+import { Breadcrumbs, Menu, Notice } from '../components/Layout.jsx'
 import { ConfirmDialog } from '../components/Modal.jsx'
 import { DeckForm, CardForm } from '../components/Forms.jsx'
 import RichText from '../components/RichText.jsx'
@@ -28,7 +28,7 @@ function CardRow({ card, onEdit, onDelete, drag }) {
       onDragOver={(e) => drag.over(e, card.id)}
       onDragEnd={drag.end}
     >
-      <span className="grip" title="Ziehen zum Sortieren"><Icon name="grip" size={16} /></span>
+      <span className="grip" aria-hidden="true"><Icon name="grip" size={16} /></span>
       <div className="crow-side">
         {card.front_image && <img src={imageUrl(card.front_image)} alt="" loading="lazy" />}
         <p><RichText text={card.front} /></p>
@@ -117,47 +117,48 @@ export default function DeckPage() {
     <>
       <Breadcrumbs
         items={[
-          { label: 'Übersicht', to: '/' },
+          { label: 'Lernen', to: '/' },
           ...(exam ? [{ label: exam.name, to: `/exams/${exam.id}` }] : []),
           { label: deck.name },
         ]}
       />
 
       <header className="page-head">
-        <div>
-          <p className="eyebrow">Deck</p>
+        <div className="page-title">
           <h1>{deck.name}</h1>
           {deck.description && <p className="lead"><RichText text={deck.description} /></p>}
         </div>
-        <div className="row">
-          <button className="icon-btn" data-tip="Deck bearbeiten" aria-label="Deck bearbeiten" onClick={() => setDialog({ type: 'edit' })}><Icon name="edit" /></button>
-          <button className="icon-btn" data-tip="Deck exportieren" aria-label="Deck exportieren" onClick={exportDeck}><Icon name="download" /></button>
-          <button className="icon-btn danger" data-tip="Deck löschen" data-tip-align="end" aria-label="Deck löschen" onClick={() => setDialog({ type: 'delete' })}><Icon name="trash" /></button>
+        <div className="page-actions">
+          {total > 0 && (
+            <Link to={`/study/deck/${id}?mode=all`} className="btn" data-tip="Ohne Bewertung durchgehen">Üben</Link>
+          )}
+          {stats.due > 0 && (
+            <Link to={`/study/deck/${id}`} className="btn btn-primary">Lernen <span className="btn-count">{stats.due}</span></Link>
+          )}
+          <Menu
+            items={[
+              { label: 'Bearbeiten', icon: 'edit', onClick: () => setDialog({ type: 'edit' }) },
+              { label: 'Exportieren', icon: 'download', onClick: exportDeck },
+              { label: 'Löschen', icon: 'trash', danger: true, onClick: () => setDialog({ type: 'delete' }) },
+            ]}
+          />
         </div>
       </header>
 
-      {notice && <p className="notice" onClick={() => setNotice(null)}>{notice}</p>}
+      <Notice text={notice} onClose={() => setNotice(null)} />
 
-      <StatsPanel stats={stats} chart={<ForecastFigure cards={cards} />}>
-        {stats.due > 0 ? (
-          <Link to={`/study/deck/${id}`} className="btn btn-primary">Fällige lernen</Link>
-        ) : (
-          <span className="muted">Nichts fällig.</span>
-        )}
-        {total > 0 && (
-          <Link to={`/study/deck/${id}?mode=all`} className="btn" title="Alle Karten ohne Bewertung durchgehen">Freies Üben</Link>
-        )}
-      </StatsPanel>
+      {total > 0 && <StatsPanel stats={stats} chart={<ForecastFigure cards={cards} />} />}
 
       <section>
         <div className="section-head">
-          <h2 className="section-title">Karten</h2>
-          <button className="btn btn-small" onClick={() => setDialog({ type: 'card' })}><Icon name="plus" size={16} /> Karte</button>
+          <h2 className="section-title">Karten <span className="count">{cards.length}</span></h2>
+          {cards.length > 0 && (
+            <button className="btn btn-small" onClick={() => setDialog({ type: 'card' })}><Icon name="plus" size={16} /> Karte</button>
+          )}
         </div>
         {cards.length === 0 ? (
           <div className="empty">
-            <p className="muted">Dieses Deck ist noch leer.</p>
-            <button className="btn btn-primary" onClick={() => setDialog({ type: 'card' })}>Erste Karte anlegen</button>
+            <button className="btn btn-primary" onClick={() => setDialog({ type: 'card' })}><Icon name="plus" /> Erste Karte</button>
           </div>
         ) : (
           <ul className="clist">
